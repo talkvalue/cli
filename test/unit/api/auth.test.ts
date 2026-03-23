@@ -38,6 +38,6 @@ describe("getOrganizations", () => {
       { id: "org_01", name: "Alpha Corp" },
       { id: "org_02", name: "Beta Inc" },
     ]);
-    expect(mockClient.get).toHaveBeenCalledWith("/auth/organizations");
+    expect(mockClient.get).toHaveBeenCalledWith("/auth/organization");
   });
 });

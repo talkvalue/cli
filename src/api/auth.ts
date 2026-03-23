@@ -6,6 +6,6 @@ export async function getAuthOverview(client: ApiClient): Promise<AuthOverviewRe
 }
 
 export async function getOrganizations(client: ApiClient): Promise<OrganizationRes[]> {
-  const response = await client.get<OrganizationListRes>("/auth/organizations");
+  const response = await client.get<OrganizationListRes>("/auth/organization");
   return response.data;
 }
