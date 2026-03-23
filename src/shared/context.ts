@@ -1,7 +1,6 @@
 import type { Command } from "commander";
 
-import { createRuntimeApiClient } from "../api/client.js";
-import type { ApiClient } from "../api/client.js";
+import { configureClients } from "../api/interceptors.js";
 import { getAccessToken } from "../auth/token.js";
 import { loadConfig } from "../config/config.js";
 import { resolveEnv } from "../config/env.js";
@@ -19,7 +18,6 @@ interface CommandGlobalOptions {
 
 export interface CommandContext {
   baseUrl: string;
-  client: ApiClient;
   config: Config;
   env: EnvConfig;
   formatter: Formatter;
@@ -55,15 +53,13 @@ export async function resolveCommandContext(command: Command): Promise<CommandCo
   const baseUrl = resolveBaseUrl(commandOptions, env, config);
   const formatter = createFormatter(detectFormat(commandOptions.format));
 
+  configureClients({
+    baseUrl,
+    auth: async () => env.token ?? (profile ? await getAccessToken(profile) : undefined),
+  });
+
   return {
     baseUrl,
-    client: createRuntimeApiClient({
-      baseUrl,
-      clientId: config.client_id,
-      config,
-      env,
-      profile,
-    }),
     config,
     env,
     formatter,

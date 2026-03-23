@@ -5,6 +5,10 @@ vi.mock("../../../src/auth/token.js", () => ({
   getRefreshToken: vi.fn(),
 }));
 
+vi.mock("../../../src/api/interceptors.js", () => ({
+  configureClients: vi.fn(),
+}));
+
 import { getAccessToken } from "../../../src/auth/token.js";
 import { AuthError } from "../../../src/errors/index.js";
 import { type CommandContext, requireAuth } from "../../../src/shared/context.js";
@@ -12,7 +16,6 @@ import { type CommandContext, requireAuth } from "../../../src/shared/context.js
 function createContext(overrides: Partial<CommandContext> = {}): CommandContext {
   return {
     baseUrl: "https://api.example.com",
-    client: {} as CommandContext["client"],
     config: {
       active_profile: "dev",
       api_url: "https://api.example.com",

@@ -1,4 +1,4 @@
-import { readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { chmod, readFile, rename, unlink, writeFile } from "node:fs/promises";
 
 import YAML from "yaml";
 
@@ -132,6 +132,7 @@ export async function saveConfig(config: Config): Promise<void> {
 
   try {
     await rename(tempFilePath, configFilePath);
+    await chmod(configFilePath, 0o600);
   } catch (error) {
     await unlink(tempFilePath).catch(() => undefined);
     throw error;

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getAuthOverview, getOrganizations } from "../../../../src/api/auth.js";
+import { Organization, Overview } from "../../../../src/api/generated/auth/sdk.gen.js";
 import { getAccessToken } from "../../../../src/auth/token.js";
 import { createAuthStatusCommand } from "../../../../src/commands/auth/status.js";
 import { setProfile } from "../../../../src/config/config.js";
@@ -17,9 +17,9 @@ vi.mock("../../../../src/auth/token.js", () => ({
   getAccessToken: vi.fn(),
 }));
 
-vi.mock("../../../../src/api/auth.js", () => ({
-  getAuthOverview: vi.fn(),
-  getOrganizations: vi.fn(),
+vi.mock("../../../../src/api/generated/auth/sdk.gen.js", () => ({
+  Overview: { getOverview: vi.fn() },
+  Organization: { getOrganizations: vi.fn() },
 }));
 
 vi.mock("../../../../src/config/config.js", () => ({
@@ -50,20 +50,8 @@ describe("createAuthStatusCommand", () => {
     const formatter = createMockFormatter();
     const output = {};
 
-    const client = {
-      delete: vi.fn(),
-      get: vi.fn(),
-      patch: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      requestJson: vi.fn(),
-      requestResponse: vi.fn(),
-      requestText: vi.fn(),
-    };
-
     vi.mocked(resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client,
       config: {
         active_profile: "dev",
         api_url: "https://api.example.com",
@@ -92,15 +80,17 @@ describe("createAuthStatusCommand", () => {
     });
 
     vi.mocked(getAccessToken).mockResolvedValue("access_123");
-    vi.mocked(getAuthOverview).mockResolvedValue({
-      memberFirstName: "Devin",
-      teamMemberCount: 12,
-    });
+    vi.mocked(Overview.getOverview).mockResolvedValue({
+      data: {
+        memberFirstName: "Devin",
+        teamMemberCount: 12,
+      },
+    } as any);
 
     await runStatusCommand();
 
     expect(getAccessToken).toHaveBeenCalledWith("dev");
-    expect(getAuthOverview).toHaveBeenCalledWith(client);
+    expect(Overview.getOverview).toHaveBeenCalled();
     expect(formatter.output).toHaveBeenCalledWith(
       {
         profile: "dev",
@@ -120,16 +110,6 @@ describe("createAuthStatusCommand", () => {
 
     vi.mocked(resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client: {
-        delete: vi.fn(),
-        get: vi.fn(),
-        patch: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-        requestJson: vi.fn(),
-        requestResponse: vi.fn(),
-        requestText: vi.fn(),
-      },
       config: {
         active_profile: "dev",
         api_url: "https://api.example.com",
@@ -154,7 +134,7 @@ describe("createAuthStatusCommand", () => {
 
     await runStatusCommand();
 
-    expect(getAuthOverview).not.toHaveBeenCalled();
+    expect(Overview.getOverview).not.toHaveBeenCalled();
     expect(formatter.output).toHaveBeenCalledWith(
       {
         profile: "dev",
@@ -169,16 +149,6 @@ describe("createAuthStatusCommand", () => {
 
     vi.mocked(resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client: {
-        delete: vi.fn(),
-        get: vi.fn(),
-        patch: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-        requestJson: vi.fn(),
-        requestResponse: vi.fn(),
-        requestText: vi.fn(),
-      },
       config: {
         active_profile: "dev",
         api_url: "https://api.example.com",
@@ -207,7 +177,7 @@ describe("createAuthStatusCommand", () => {
     });
 
     vi.mocked(getAccessToken).mockResolvedValue("access_123");
-    vi.mocked(getAuthOverview).mockRejectedValue(new AuthError("Session expired"));
+    vi.mocked(Overview.getOverview).mockRejectedValue(new AuthError("Session expired"));
 
     await runStatusCommand();
 
@@ -227,20 +197,8 @@ describe("createAuthStatusCommand", () => {
     const formatter = createMockFormatter();
     const output = {};
 
-    const client = {
-      delete: vi.fn(),
-      get: vi.fn(),
-      patch: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      requestJson: vi.fn(),
-      requestResponse: vi.fn(),
-      requestText: vi.fn(),
-    };
-
     vi.mocked(resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client,
       config: {
         active_profile: "dev",
         api_url: "https://api.example.com",
@@ -269,19 +227,25 @@ describe("createAuthStatusCommand", () => {
     });
 
     vi.mocked(getAccessToken).mockResolvedValue("access_123");
-    vi.mocked(getAuthOverview).mockResolvedValue({
-      memberFirstName: "Devin",
-      teamMemberCount: 12,
-    });
-    vi.mocked(getOrganizations).mockResolvedValue([
-      { id: "org_dev", name: "Dev Org" },
-      { id: "org_other", name: "Other Org" },
-    ]);
+    vi.mocked(Overview.getOverview).mockResolvedValue({
+      data: {
+        memberFirstName: "Devin",
+        teamMemberCount: 12,
+      },
+    } as any);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: {
+        data: [
+          { id: "org_dev", name: "Dev Org" },
+          { id: "org_other", name: "Other Org" },
+        ],
+      },
+    } as any);
     vi.mocked(setProfile).mockResolvedValue(undefined);
 
     await runStatusCommand();
 
-    expect(getOrganizations).toHaveBeenCalledWith(client);
+    expect(Organization.getOrganizations).toHaveBeenCalled();
     expect(setProfile).toHaveBeenCalledWith("dev", {
       auth_method: "oauth",
       member_email: "dev@example.com",

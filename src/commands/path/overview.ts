@@ -1,7 +1,8 @@
 import { Command } from "commander";
 
-import type { PathOverviewRes, PathOverviewStatsRes } from "../../api/generated/index.js";
-import { getOverview, getOverviewStats } from "../../api/path.js";
+import { Overview } from "../../api/generated/path/sdk.gen.js";
+import type { PathOverviewRes, PathOverviewStatsRes } from "../../api/generated/path/types.gen.js";
+import { unwrap } from "../../api/unwrap.js";
 import { requireAuth, resolveCommandContext } from "../../shared/context.js";
 
 function toRecord(data: PathOverviewRes | PathOverviewStatsRes): Record<string, unknown> {
@@ -15,8 +16,8 @@ export function createOverviewCommand(): Command {
     const context = await resolveCommandContext(command);
     await requireAuth(context);
 
-    const data = await getOverview(context.client);
-    context.formatter.output(toRecord(data), context.output);
+    const { data } = await Overview.getOverview();
+    context.formatter.output(toRecord(unwrap(data, "overview")), context.output);
   });
 
   overviewCommand
@@ -27,8 +28,10 @@ export function createOverviewCommand(): Command {
       const context = await resolveCommandContext(command);
       await requireAuth(context);
 
-      const data = await getOverviewStats(context.client, options.timezone);
-      context.formatter.output(toRecord(data), context.output);
+      const { data } = await Overview.getStats({
+        query: { timeZone: options.timezone },
+      });
+      context.formatter.output(toRecord(unwrap(data, "overview stats")), context.output);
     });
 
   return overviewCommand;

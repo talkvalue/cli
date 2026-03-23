@@ -4,7 +4,8 @@ vi.mock("../../../src/auth/device-flow.js", () => ({
   authenticateWithRefreshToken: vi.fn(),
 }));
 
-vi.mock("../../../src/auth/token.js", () => ({
+vi.mock("../../../src/auth/token.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../src/auth/token.js")>()),
   getRefreshToken: vi.fn(),
   storeTokens: vi.fn(),
 }));

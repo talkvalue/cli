@@ -30,7 +30,7 @@ vi.mock("@napi-rs/keyring", () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Mock external HTTP calls — device-flow (WorkOS), API auth, and prompt
+// Mock external HTTP calls — device-flow (WorkOS), SDK auth, and prompt
 // ---------------------------------------------------------------------------
 
 vi.mock("../../src/auth/device-flow.js", () => ({
@@ -40,9 +40,9 @@ vi.mock("../../src/auth/device-flow.js", () => ({
   requestDeviceCode: vi.fn(),
 }));
 
-vi.mock("../../src/api/auth.js", () => ({
-  getAuthOverview: vi.fn(),
-  getOrganizations: vi.fn(),
+vi.mock("../../src/api/generated/auth/sdk.gen.js", () => ({
+  Overview: { getOverview: vi.fn() },
+  Organization: { getOrganizations: vi.fn() },
 }));
 
 vi.mock("../../src/shared/prompt.js", () => ({
@@ -53,7 +53,7 @@ vi.mock("../../src/shared/prompt.js", () => ({
 // Import the mocked modules so we can configure their return values
 // ---------------------------------------------------------------------------
 
-import { getAuthOverview, getOrganizations } from "../../src/api/auth.js";
+import { Organization, Overview } from "../../src/api/generated/auth/sdk.gen.js";
 import {
   authenticateWithRefreshToken,
   openVerificationUri,
@@ -172,8 +172,10 @@ describe("integration: auth flow (login -> status -> switch)", () => {
       token_type: "Bearer",
     });
 
-    // getOrganizations returns 2 orgs
-    vi.mocked(getOrganizations).mockResolvedValue([ORG_A, ORG_B]);
+    // getOrganizations returns 2 orgs via SDK
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [ORG_A, ORG_B] },
+    } as any);
 
     // selectOrganization auto-selects the first org
     vi.mocked(selectOrganization).mockResolvedValue(ORG_A);
@@ -231,10 +233,12 @@ describe("integration: auth flow (login -> status -> switch)", () => {
     // -----------------------------------------------------------------------
 
     // Reset mocks for the status step, but keep env pointing to same temp dir
-    vi.mocked(getAuthOverview).mockResolvedValue({
-      memberFirstName: "Alice",
-      teamMemberCount: 5,
-    });
+    vi.mocked(Overview.getOverview).mockResolvedValue({
+      data: {
+        memberFirstName: "Alice",
+        teamMemberCount: 5,
+      },
+    } as any);
 
     // Capture formatter output by spying on stdout
     const stdoutChunks: string[] = [];
@@ -267,7 +271,9 @@ describe("integration: auth flow (login -> status -> switch)", () => {
     // -----------------------------------------------------------------------
 
     // getOrganizations returns same 2 orgs
-    vi.mocked(getOrganizations).mockResolvedValue([ORG_A, ORG_B]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [ORG_A, ORG_B] },
+    } as any);
 
     // selectOrganization selects the second org
     vi.mocked(selectOrganization).mockResolvedValue(ORG_B);

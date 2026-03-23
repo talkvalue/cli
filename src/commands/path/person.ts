@@ -1,22 +1,15 @@
 import { Command, InvalidArgumentError } from "commander";
 
-import type { ApiClient } from "../../api/client.js";
-import type { PersonFilterParams, UpdatePersonReq } from "../../api/generated/index.js";
-import {
-  deletePerson,
-  exportPersons,
-  getPerson,
-  listPersons,
-  mergePersons,
-  updatePerson,
-} from "../../api/path.js";
+import { Person } from "../../api/generated/path/sdk.gen.js";
+import type { UpdatePersonReq } from "../../api/generated/path/types.gen.js";
+import type { PersonFilterParams } from "../../api/types.js";
+import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
 import { createFormatter, detectFormat } from "../../output/index.js";
 import type { ColumnDef, Formatter, OutputContext } from "../../output/index.js";
 import { requireAuth, resolveCommandContext } from "../../shared/context.js";
 
 interface PersonCommandDependencies {
-  client?: ApiClient;
   formatter?: Formatter;
   writeStdout?: (text: string) => void;
 }
@@ -196,17 +189,9 @@ function resolveFormatter(command: Command, dependencies: PersonCommandDependenc
   return createFormatter(detectFormat(globals.format));
 }
 
-async function resolveClient(
-  command: Command,
-  dependencies: PersonCommandDependencies,
-): Promise<ApiClient> {
-  if (dependencies.client !== undefined) {
-    return dependencies.client;
-  }
-
+async function ensureAuth(command: Command): Promise<void> {
   const context = await resolveCommandContext(command);
   await requireAuth(context);
-  return context.client;
 }
 
 function resolveWriteStdout(dependencies: PersonCommandDependencies): (text: string) => void {
@@ -236,10 +221,11 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
     .option("--sort <value>", "sort expression", collectString, [])
     .action(async (options: ListOptions, command: Command) => {
       const formatter = resolveFormatter(command, dependencies);
-      const client = await resolveClient(command, dependencies);
+      await ensureAuth(command);
       const filters = buildFilterParams(options);
-      const page = await listPersons(client, filters);
-      const rows = page.content.map((person) => ({
+      const { data } = await Person.listPeople({ query: filters });
+      const list = unwrap(data, "people");
+      const rows = list.content.map((person) => ({
         companyName: person.company?.displayName ?? null,
         id: person.id,
         jobTitle: person.jobTitle,
@@ -251,10 +237,10 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
         rows,
         PERSON_LIST_COLUMNS,
         toOutputContext({
-          page: page.pageNumber,
-          pageSize: page.pageSize,
-          totalElements: page.totalElements,
-          totalPages: page.totalPages,
+          page: list.pageNumber,
+          pageSize: list.pageSize,
+          totalElements: list.totalElements,
+          totalPages: list.totalPages,
         }),
       );
     });
@@ -265,10 +251,10 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
     .description("Get person details")
     .action(async (id: number, _options: unknown, command: Command) => {
       const formatter = resolveFormatter(command, dependencies);
-      const client = await resolveClient(command, dependencies);
-      const person = await getPerson(client, id);
+      await ensureAuth(command);
+      const { data: person } = await Person.getPerson({ path: { id } });
 
-      formatter.output({ ...person }, toOutputContext());
+      formatter.output({ ...unwrap(person, "person") }, toOutputContext());
     });
 
   personCommand
@@ -289,11 +275,11 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
     .option("--company-name <name>")
     .action(async (id: number, options: UpdateOptions, command: Command) => {
       const formatter = resolveFormatter(command, dependencies);
-      const client = await resolveClient(command, dependencies);
+      await ensureAuth(command);
       const payload = buildUpdatePayload(options);
-      const person = await updatePerson(client, id, payload);
+      const { data: person } = await Person.updatePerson({ path: { id }, body: payload });
 
-      formatter.output({ ...person }, toOutputContext());
+      formatter.output({ ...unwrap(person, "person") }, toOutputContext());
     });
 
   personCommand
@@ -305,8 +291,8 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
       ensureConfirmed(options.confirm, "delete");
 
       const formatter = resolveFormatter(command, dependencies);
-      const client = await resolveClient(command, dependencies);
-      await deletePerson(client, id);
+      await ensureAuth(command);
+      await Person.deletePerson({ path: { id } });
       formatter.output({ deleted: true, id }, toOutputContext());
     });
 
@@ -321,30 +307,23 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
         ensureConfirmed(options.confirm, "merge");
 
         const formatter = resolveFormatter(command, dependencies);
-        const client = await resolveClient(command, dependencies);
-        const person = await mergePersons(client, sourceId, targetId);
+        await ensureAuth(command);
+        const { data: person } = await Person.mergePerson({ path: { sourceId, targetId } });
 
-        formatter.output({ ...person }, toOutputContext());
+        formatter.output({ ...unwrap(person, "person") }, toOutputContext());
       },
     );
 
   personCommand
     .command("export")
     .description("Export people as CSV")
-    .option("--keyword <keyword>", "keyword filter")
-    .option("--channel-id <id>", "channel filter", collectNumber("channel-id"), [])
-    .option("--event-id <id>", "event filter", collectNumber("event-id"), [])
-    .option("--company-name <name>", "company name filter")
-    .option("--job-title <title>", "job title filter")
-    .option("--page <n>", "page number", (value: string) => parseInteger(value, "page"))
-    .option("--page-size <n>", "page size", (value: string) => parseInteger(value, "page-size"))
-    .option("--sort <value>", "sort expression", collectString, [])
-    .action(async (options: ListOptions, command: Command) => {
-      const client = await resolveClient(command, dependencies);
-      const filters = buildFilterParams(options);
-      const csvText = await exportPersons(client, filters);
+    .action(async (_options: unknown, command: Command) => {
+      await ensureAuth(command);
+      const { response } = await Person.exportPeopleCsv({
+        parseAs: "stream",
+      });
 
-      writeStdout(csvText);
+      writeStdout(await response.text());
     });
 
   return personCommand;

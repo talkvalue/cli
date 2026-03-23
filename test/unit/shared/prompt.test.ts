@@ -1,4 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@inquirer/select", () => ({ default: vi.fn() }));
+
+import select from "@inquirer/select";
 import { selectOrganization } from "../../../src/shared/prompt.js";
 
 interface Organization {
@@ -41,5 +45,20 @@ describe("selectOrganization", () => {
 
   it("throws UsageError when no organizations available", async () => {
     await expect(selectOrganization([])).rejects.toThrow("No organizations available");
+  });
+
+  it("calls select with correct choices in interactive mode", async () => {
+    vi.mocked(select).mockResolvedValueOnce(orgs[1]);
+
+    const result = await selectOrganization(orgs, undefined, { isTTY: true });
+
+    expect(result).toEqual(orgs[1]);
+    expect(select).toHaveBeenCalledWith({
+      message: "Select an organization",
+      choices: [
+        { name: "Alpha Corp", value: orgs[0], description: "org_01" },
+        { name: "Beta Inc", value: orgs[1], description: "org_02" },
+      ],
+    });
   });
 });

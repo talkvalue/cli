@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getOrganizations } from "../../../../src/api/auth.js";
+import { Organization } from "../../../../src/api/generated/auth/sdk.gen.js";
 import {
   authenticateWithRefreshToken,
   openVerificationUri,
@@ -31,7 +31,8 @@ vi.mock("../../../../src/auth/id-token.js", () => ({
   decodeIdToken: vi.fn(),
 }));
 
-vi.mock("../../../../src/auth/token.js", () => ({
+vi.mock("../../../../src/auth/token.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../../src/auth/token.js")>()),
   storeTokens: vi.fn(),
 }));
 
@@ -39,8 +40,8 @@ vi.mock("../../../../src/config/config.js", () => ({
   createProfile: vi.fn(),
 }));
 
-vi.mock("../../../../src/api/auth.js", () => ({
-  getOrganizations: vi.fn(),
+vi.mock("../../../../src/api/generated/auth/sdk.gen.js", () => ({
+  Organization: { getOrganizations: vi.fn() },
 }));
 
 vi.mock("../../../../src/shared/prompt.js", () => ({
@@ -55,26 +56,12 @@ function createMockFormatter(): Formatter {
   };
 }
 
-function createMockClient() {
-  return {
-    delete: vi.fn(),
-    get: vi.fn(),
-    patch: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    requestJson: vi.fn(),
-    requestResponse: vi.fn(),
-    requestText: vi.fn(),
-  };
-}
-
 function createMockContext(overrides: Record<string, unknown> = {}) {
   const formatter = createMockFormatter();
   const output: OutputContext = {};
 
   return {
     baseUrl: "https://api.example.com",
-    client: createMockClient(),
     config: {
       active_profile: "",
       api_url: "https://api.example.com",
@@ -147,14 +134,15 @@ describe("createAuthLoginCommand", () => {
 
   it("login with single org — auto-selects, stores tokens, creates profile", async () => {
     const context = createMockContext();
-    const freshContext = createMockContext();
     vi.mocked(resolveCommandContext)
       .mockResolvedValueOnce(context as never)
-      .mockResolvedValueOnce(freshContext as never);
+      .mockResolvedValueOnce(context as never);
 
     setupDeviceFlow();
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_abc", name: "Acme Corp" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",
@@ -179,8 +167,8 @@ describe("createAuthLoginCommand", () => {
       refreshToken: "refresh_123",
     });
 
-    // Org list fetched
-    expect(getOrganizations).toHaveBeenCalledWith(freshContext.client);
+    // Org list fetched via SDK
+    expect(Organization.getOrganizations).toHaveBeenCalled();
 
     // selectOrganization called with orgs and no --org flag
     expect(selectOrganization).toHaveBeenCalledWith(
@@ -226,17 +214,20 @@ describe("createAuthLoginCommand", () => {
 
   it("login with --org flag — matches by name", async () => {
     const context = createMockContext();
-    const freshContext = createMockContext();
     vi.mocked(resolveCommandContext)
       .mockResolvedValueOnce(context as never)
-      .mockResolvedValueOnce(freshContext as never);
+      .mockResolvedValueOnce(context as never);
 
     setupDeviceFlow();
 
-    vi.mocked(getOrganizations).mockResolvedValue([
-      { id: "org_abc", name: "Acme Corp" },
-      { id: "org_xyz", name: "Other Org" },
-    ]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: {
+        data: [
+          { id: "org_abc", name: "Acme Corp" },
+          { id: "org_xyz", name: "Other Org" },
+        ],
+      },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",
@@ -264,14 +255,15 @@ describe("createAuthLoginCommand", () => {
 
   it("stores org-scoped tokens after re-auth with selected org", async () => {
     const context = createMockContext();
-    const freshContext = createMockContext();
     vi.mocked(resolveCommandContext)
       .mockResolvedValueOnce(context as never)
-      .mockResolvedValueOnce(freshContext as never);
+      .mockResolvedValueOnce(context as never);
 
     setupDeviceFlow();
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_abc", name: "Acme Corp" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",
@@ -317,10 +309,9 @@ describe("createAuthLoginCommand", () => {
 
   it("profile name derived from email slug", async () => {
     const context = createMockContext();
-    const freshContext = createMockContext();
     vi.mocked(resolveCommandContext)
       .mockResolvedValueOnce(context as never)
-      .mockResolvedValueOnce(freshContext as never);
+      .mockResolvedValueOnce(context as never);
 
     setupDeviceFlow();
 
@@ -332,7 +323,9 @@ describe("createAuthLoginCommand", () => {
       sub: "user_456",
     });
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_abc", name: "Acme Corp" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",

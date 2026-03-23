@@ -1,7 +1,7 @@
 import type { EnvConfig } from "../config/env.js";
 
 import { authenticateWithRefreshToken } from "./device-flow.js";
-import { getRefreshToken, storeTokens } from "./token.js";
+import { getRefreshToken, resolveExpiry, storeTokens } from "./token.js";
 
 interface RefreshHandlerOptions {
   authApiUrl?: string;
@@ -9,14 +9,6 @@ interface RefreshHandlerOptions {
   env: EnvConfig;
   organizationId?: string;
   profile: string;
-}
-
-function resolveExpiry(expiresInSeconds: number | undefined): string | undefined {
-  if (expiresInSeconds === undefined) {
-    return undefined;
-  }
-
-  return new Date(Date.now() + expiresInSeconds * 1000).toISOString();
 }
 
 export function createStoredTokenRefreshHandler(

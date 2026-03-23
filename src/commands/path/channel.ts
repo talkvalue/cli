@@ -1,22 +1,13 @@
 import { Command } from "commander";
 
-import type { ApiClient } from "../../api/client.js";
+import { Channel } from "../../api/generated/path/sdk.gen.js";
 import type {
   CreateChannelReq,
   CreatePersonReq,
-  PersonFilterParams,
   UpdateChannelReq,
-} from "../../api/generated/index.js";
-import {
-  addPersonToChannel,
-  createChannel,
-  deleteChannel,
-  exportChannelPeople,
-  getChannel,
-  listChannelPeople,
-  listChannels,
-  updateChannel,
-} from "../../api/path.js";
+} from "../../api/generated/path/types.gen.js";
+import type { PersonFilterParams } from "../../api/types.js";
+import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
 import { createFormatter, detectFormat } from "../../output/index.js";
 import type { Formatter, OutputContext } from "../../output/index.js";
@@ -42,7 +33,6 @@ const PERSON_COLUMNS = [
 ];
 
 export interface CreateChannelCommandOptions {
-  client?: ApiClient;
   formatter?: Formatter;
   writeStdout?: (text: string) => void;
 }
@@ -116,17 +106,9 @@ function resolveFormatter(command: Command, options: CreateChannelCommandOptions
   return createFormatter(detectFormat(globals.format));
 }
 
-async function resolveClient(
-  command: Command,
-  options: CreateChannelCommandOptions,
-): Promise<ApiClient> {
-  if (options.client !== undefined) {
-    return options.client;
-  }
-
+async function ensureAuth(command: Command): Promise<void> {
   const context = await resolveCommandContext(command);
   await requireAuth(context);
-  return context.client;
 }
 
 function pickDefined<TValue extends object>(value: TValue): Partial<TValue> {
@@ -144,10 +126,10 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .description("List channels")
     .action(async (_actionOptions: unknown, command: Command) => {
       const formatter = resolveFormatter(command, options);
-      const client = await resolveClient(command, options);
-      const channels = await listChannels(client);
+      await ensureAuth(command);
+      const { data: channels } = await Channel.listChannels();
       formatter.list(
-        channels.map((channel) => toOutputRecord(channel)),
+        (channels ?? []).map((channel) => toOutputRecord(channel)),
         CHANNEL_COLUMNS,
         toOutputContext(),
       );
@@ -159,10 +141,15 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .argument("<id>", "channel id")
     .action(async (rawId: string, _actionOptions: unknown, command: Command) => {
       const formatter = resolveFormatter(command, options);
-      const client = await resolveClient(command, options);
+      await ensureAuth(command);
       const id = parseNumericId(rawId, "channel id");
-      const channel = await getChannel(client, id);
-      formatter.output(toOutputRecord(channel), toOutputContext());
+      // No getChannel endpoint in SDK; filter from listChannels
+      const { data: channel } = await Channel.listChannels();
+      const found = (channel ?? []).find((c) => c.id === id);
+      if (!found) {
+        throw new UsageError(`Channel ${id} not found`);
+      }
+      formatter.output(toOutputRecord(found), toOutputContext());
     });
 
   command
@@ -177,15 +164,15 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
       }
 
       const formatter = resolveFormatter(command, options);
-      const client = await resolveClient(command, options);
+      await ensureAuth(command);
 
       const payload: CreateChannelReq = {
         ...(createOptions.color !== undefined ? { color: createOptions.color } : {}),
         ...(createOptions.icon !== undefined ? { icon: createOptions.icon } : {}),
         name: createOptions.name,
       };
-      const channel = await createChannel(client, payload);
-      formatter.output(toOutputRecord(channel), toOutputContext());
+      const { data: channel } = await Channel.createChannel({ body: payload });
+      formatter.output(toOutputRecord(unwrap(channel, "channel")), toOutputContext());
     });
 
   command
@@ -201,15 +188,15 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
       }
 
       const formatter = resolveFormatter(command, options);
-      const client = await resolveClient(command, options);
+      await ensureAuth(command);
       const id = parseNumericId(rawId, "channel id");
       const payload = pickDefined({
         color: updateOptions.color,
         icon: updateOptions.icon,
         name: updateOptions.name,
       }) as UpdateChannelReq;
-      const channel = await updateChannel(client, id, payload);
-      formatter.output(toOutputRecord(channel), toOutputContext());
+      const { data: channel } = await Channel.updateChannel({ path: { id }, body: payload });
+      formatter.output(toOutputRecord(unwrap(channel, "channel")), toOutputContext());
     });
 
   command
@@ -223,9 +210,9 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
       }
 
       const formatter = resolveFormatter(command, options);
-      const client = await resolveClient(command, options);
+      await ensureAuth(command);
       const id = parseNumericId(rawId, "channel id");
-      await deleteChannel(client, id);
+      await Channel.deleteChannel({ path: { id } });
       formatter.output(
         {
           deleted: true,
@@ -244,22 +231,26 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .option("--page-size <pageSize>", "page size", Number.parseInt)
     .action(async (rawChannelId: string, peopleOptions: PeopleCommandOptions, command: Command) => {
       const formatter = resolveFormatter(command, options);
-      const client = await resolveClient(command, options);
+      await ensureAuth(command);
       const channelId = parseNumericId(rawChannelId, "channel id");
       const filters = pickDefined<PersonFilterParams>({
         keyword: peopleOptions.keyword,
         pageNumber: peopleOptions.pageNumber,
         pageSize: peopleOptions.pageSize,
       });
-      const result = await listChannelPeople(client, channelId, filters);
+      const { data: result } = await Channel.listChannelPeople({
+        path: { channelId },
+        query: filters,
+      });
+      const page = unwrap(result, "channel people");
       formatter.list(
-        result.content.map((person) => toOutputRecord(person)),
+        page.content.map((person) => toOutputRecord(person)),
         PERSON_COLUMNS,
         toOutputContext({
-          page: result.pageNumber,
-          pageSize: result.pageSize,
-          totalElements: result.totalElements,
-          totalPages: result.totalPages,
+          page: page.pageNumber,
+          pageSize: page.pageSize,
+          totalElements: page.totalElements,
+          totalPages: page.totalPages,
         }),
       );
     });
@@ -286,7 +277,7 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
         }
 
         const formatter = resolveFormatter(command, options);
-        const client = await resolveClient(command, options);
+        await ensureAuth(command);
         const channelId = parseNumericId(rawChannelId, "channel id");
         const payload: CreatePersonReq = {
           ...(addPersonOptions.address !== undefined ? { address: addPersonOptions.address } : {}),
@@ -315,8 +306,11 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
           phones: addPersonOptions.phone ?? [],
           ...(addPersonOptions.xUrl !== undefined ? { xUrl: addPersonOptions.xUrl } : {}),
         };
-        const person = await addPersonToChannel(client, channelId, payload);
-        formatter.output(toOutputRecord(person), toOutputContext());
+        const { data: person } = await Channel.createChannelPerson({
+          path: { channelId },
+          body: payload,
+        });
+        formatter.output(toOutputRecord(unwrap(person, "person")), toOutputContext());
       },
     );
 
@@ -325,10 +319,13 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .description("Export people in a channel as CSV")
     .argument("<channelId>", "channel id")
     .action(async (rawChannelId: string) => {
-      const client = await resolveClient(command, options);
+      await ensureAuth(command);
       const channelId = parseNumericId(rawChannelId, "channel id");
-      const csvText = await exportChannelPeople(client, channelId);
-      writeStdout(csvText);
+      const { response } = await Channel.exportChannelPeopleCsv({
+        path: { channelId },
+        parseAs: "stream",
+      });
+      writeStdout(await response.text());
     });
 
   return command;

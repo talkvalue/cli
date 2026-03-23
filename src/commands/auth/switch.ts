@@ -1,18 +1,13 @@
 import chalk from "chalk";
 import { Command } from "commander";
 
-import { getOrganizations } from "../../api/auth.js";
+import { Organization } from "../../api/generated/auth/sdk.gen.js";
 import { authenticateWithRefreshToken } from "../../auth/device-flow.js";
-import { getRefreshToken, storeTokens } from "../../auth/token.js";
+import { getRefreshToken, resolveExpiry, storeTokens } from "../../auth/token.js";
 import { setProfile } from "../../config/config.js";
 import { AuthError } from "../../errors/index.js";
 import { resolveCommandContext } from "../../shared/context.js";
 import { selectOrganization } from "../../shared/prompt.js";
-
-function resolveExpiry(expiresInSeconds: number | undefined): string | undefined {
-  if (expiresInSeconds === undefined) return undefined;
-  return new Date(Date.now() + expiresInSeconds * 1000).toISOString();
-}
 
 export function createAuthSwitchCommand(): Command {
   const switchCommand = new Command("switch")
@@ -32,7 +27,8 @@ export function createAuthSwitchCommand(): Command {
       throw new AuthError("No refresh token found. Run `talkvalue auth login` first.");
     }
 
-    const organizations = await getOrganizations(context.client);
+    const { data: orgList } = await Organization.getOrganizations();
+    const organizations = orgList?.data ?? [];
     const selectedOrg = await selectOrganization(organizations, orgArg);
 
     const authApiOverride = context.env.authApiUrl;

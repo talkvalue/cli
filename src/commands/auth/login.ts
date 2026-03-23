@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { Command } from "commander";
 
-import { getOrganizations } from "../../api/auth.js";
+import { Organization } from "../../api/generated/auth/sdk.gen.js";
 import {
   authenticateWithRefreshToken,
   openVerificationUri,
@@ -9,7 +9,7 @@ import {
   requestDeviceCode,
 } from "../../auth/device-flow.js";
 import { decodeIdToken } from "../../auth/id-token.js";
-import { storeTokens } from "../../auth/token.js";
+import { resolveExpiry, storeTokens } from "../../auth/token.js";
 import { createProfile } from "../../config/config.js";
 import { resolveCommandContext } from "../../shared/context.js";
 import { selectOrganization } from "../../shared/prompt.js";
@@ -33,11 +33,6 @@ function resolveEmail(
   token: Awaited<ReturnType<typeof pollForToken>>,
 ): string | undefined {
   return claims?.email ?? token.user?.email;
-}
-
-function resolveExpiry(expiresInSeconds: number | undefined): string | undefined {
-  if (expiresInSeconds === undefined) return undefined;
-  return new Date(Date.now() + expiresInSeconds * 1000).toISOString();
 }
 
 export function createAuthLoginCommand(): Command {
@@ -100,9 +95,10 @@ export function createAuthLoginCommand(): Command {
       org_name: "",
     });
 
-    // 3. Org selection
-    const freshContext = await resolveCommandContext(loginCommand);
-    const organizations = await getOrganizations(freshContext.client);
+    // 3. Org selection — re-resolve context so SDK clients pick up the new tokens
+    await resolveCommandContext(loginCommand);
+    const { data: orgList } = await Organization.getOrganizations();
+    const organizations = orgList?.data ?? [];
     const selectedOrg = await selectOrganization(organizations, orgFlag);
 
     // 4. Re-authenticate with selected org

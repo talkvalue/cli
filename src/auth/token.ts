@@ -110,3 +110,8 @@ export function needsRefresh(expiresAt: string | undefined): boolean {
 
   return timestamp <= Date.now() + REFRESH_WINDOW_MS;
 }
+
+export function resolveExpiry(expiresInSeconds: number | undefined): string | undefined {
+  if (expiresInSeconds === undefined) return undefined;
+  return new Date(Date.now() + expiresInSeconds * 1000).toISOString();
+}

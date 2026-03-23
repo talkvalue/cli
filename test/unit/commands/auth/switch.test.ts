@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getOrganizations } from "../../../../src/api/auth.js";
+import { Organization } from "../../../../src/api/generated/auth/sdk.gen.js";
 import { authenticateWithRefreshToken } from "../../../../src/auth/device-flow.js";
 import { getRefreshToken, storeTokens } from "../../../../src/auth/token.js";
 import { createAuthSwitchCommand } from "../../../../src/commands/auth/switch.js";
@@ -19,15 +19,16 @@ vi.mock("../../../../src/shared/prompt.js", () => ({
   selectOrganization: vi.fn(),
 }));
 
-vi.mock("../../../../src/api/auth.js", () => ({
-  getOrganizations: vi.fn(),
+vi.mock("../../../../src/api/generated/auth/sdk.gen.js", () => ({
+  Organization: { getOrganizations: vi.fn() },
 }));
 
 vi.mock("../../../../src/auth/device-flow.js", () => ({
   authenticateWithRefreshToken: vi.fn(),
 }));
 
-vi.mock("../../../../src/auth/token.js", () => ({
+vi.mock("../../../../src/auth/token.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../../src/auth/token.js")>()),
   getRefreshToken: vi.fn(),
   storeTokens: vi.fn(),
 }));
@@ -44,26 +45,12 @@ function createMockFormatter(): Formatter {
   };
 }
 
-function createMockClient() {
-  return {
-    delete: vi.fn(),
-    get: vi.fn(),
-    patch: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    requestJson: vi.fn(),
-    requestResponse: vi.fn(),
-    requestText: vi.fn(),
-  };
-}
-
 function createMockContext(overrides: Record<string, unknown> = {}) {
   const formatter = createMockFormatter();
   const output: OutputContext = {};
 
   return {
     baseUrl: "https://api.example.com",
-    client: createMockClient(),
     config: {
       active_profile: "ted",
       api_url: "https://api.example.com",
@@ -119,10 +106,14 @@ describe("createAuthSwitchCommand", () => {
 
     vi.mocked(getRefreshToken).mockResolvedValue("refresh_existing");
 
-    vi.mocked(getOrganizations).mockResolvedValue([
-      { id: "org_abc", name: "Acme Corp" },
-      { id: "org_xyz", name: "Other Org" },
-    ]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: {
+        data: [
+          { id: "org_abc", name: "Acme Corp" },
+          { id: "org_xyz", name: "Other Org" },
+        ],
+      },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",
@@ -196,7 +187,7 @@ describe("createAuthSwitchCommand", () => {
     vi.mocked(getRefreshToken).mockResolvedValue(undefined);
 
     await expect(runSwitchCommand("Acme Corp")).rejects.toBeInstanceOf(AuthError);
-    expect(getOrganizations).not.toHaveBeenCalled();
+    expect(Organization.getOrganizations).not.toHaveBeenCalled();
   });
 
   it("stores new tokens from authenticateWithRefreshToken", async () => {
@@ -204,7 +195,9 @@ describe("createAuthSwitchCommand", () => {
     vi.mocked(resolveCommandContext).mockResolvedValue(context as never);
     vi.mocked(getRefreshToken).mockResolvedValue("refresh_existing");
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_abc", name: "Acme Corp" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",
@@ -234,7 +227,9 @@ describe("createAuthSwitchCommand", () => {
     vi.mocked(resolveCommandContext).mockResolvedValue(context as never);
     vi.mocked(getRefreshToken).mockResolvedValue("refresh_existing");
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_abc", name: "Acme Corp" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",
@@ -262,7 +257,9 @@ describe("createAuthSwitchCommand", () => {
     vi.mocked(resolveCommandContext).mockResolvedValue(context as never);
     vi.mocked(getRefreshToken).mockResolvedValue("refresh_existing");
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_new", name: "New Org" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_new", name: "New Org" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_new",
@@ -300,7 +297,9 @@ describe("createAuthSwitchCommand", () => {
     vi.mocked(resolveCommandContext).mockResolvedValue(context as never);
     vi.mocked(getRefreshToken).mockResolvedValue("refresh_existing");
 
-    vi.mocked(getOrganizations).mockResolvedValue([{ id: "org_abc", name: "Acme Corp" }]);
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
 
     vi.mocked(selectOrganization).mockResolvedValue({
       id: "org_abc",

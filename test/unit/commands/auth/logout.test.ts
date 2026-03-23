@@ -40,16 +40,6 @@ describe("createAuthLogoutCommand", () => {
 
     vi.mocked(resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client: {
-        delete: vi.fn(),
-        get: vi.fn(),
-        patch: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-        requestJson: vi.fn(),
-        requestResponse: vi.fn(),
-        requestText: vi.fn(),
-      },
       config: {
         active_profile: "dev",
         api_url: "https://api.example.com",
@@ -87,16 +77,6 @@ describe("createAuthLogoutCommand", () => {
 
     vi.mocked(resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client: {
-        delete: vi.fn(),
-        get: vi.fn(),
-        patch: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-        requestJson: vi.fn(),
-        requestResponse: vi.fn(),
-        requestText: vi.fn(),
-      },
       config: {
         active_profile: "",
         api_url: "https://api.example.com",

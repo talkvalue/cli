@@ -1,3 +1,4 @@
+import { UsageError } from "../errors/index.js";
 import { CsvFormatter } from "./csv.js";
 import { JsonFormatter } from "./json.js";
 import { TableFormatter } from "./table.js";
@@ -42,5 +43,5 @@ export function createFormatter(format: string): Formatter {
     return new CsvFormatter();
   }
 
-  throw new Error(`Unsupported output format: ${format}`);
+  throw new UsageError(`Unsupported output format: ${format}`);
 }

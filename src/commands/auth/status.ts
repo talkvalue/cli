@@ -1,6 +1,6 @@
 import { Command } from "commander";
 
-import { getAuthOverview, getOrganizations } from "../../api/auth.js";
+import { Organization, Overview } from "../../api/generated/auth/sdk.gen.js";
 import { getAccessToken } from "../../auth/token.js";
 import { setProfile } from "../../config/config.js";
 import { AuthError, CliError } from "../../errors/index.js";
@@ -50,9 +50,9 @@ export function createAuthStatusCommand(): Command {
 
     if (loggedIn) {
       try {
-        const overview = await getAuthOverview(context.client);
-        payload.memberFirstName = overview.memberFirstName;
-        payload.teamMemberCount = overview.teamMemberCount;
+        const { data: overview } = await Overview.getOverview();
+        payload.memberFirstName = overview?.memberFirstName;
+        payload.teamMemberCount = overview?.teamMemberCount;
       } catch (error) {
         if (isAuthenticationFailure(error)) {
           loggedIn = false;
@@ -63,7 +63,8 @@ export function createAuthStatusCommand(): Command {
       // Backfill orgName if empty
       if (!profileConfig?.org_name && profileConfig) {
         try {
-          const orgs = await getOrganizations(context.client);
+          const { data: orgList } = await Organization.getOrganizations();
+          const orgs = orgList?.data ?? [];
           const currentOrg = orgs.find((o) => o.id === profileConfig.org_id);
           if (currentOrg) {
             await setProfile(activeProfile, {

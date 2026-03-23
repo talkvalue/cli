@@ -1,12 +1,17 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import * as pathApi from "../../../../src/api/path.js";
+import { Overview } from "../../../../src/api/generated/path/sdk.gen.js";
 import { createPathCommand } from "../../../../src/commands/path/index.js";
 import * as sharedModule from "../../../../src/shared/context.js";
 
 vi.mock("../../../../src/shared/context.js");
-vi.mock("../../../../src/api/path.js");
+vi.mock("../../../../src/api/generated/path/sdk.gen.js", () => ({
+  Overview: {
+    getOverview: vi.fn(),
+    getStats: vi.fn(),
+  },
+}));
 
 function createRoot(): Command {
   return new Command().option("--format <format>").addCommand(createPathCommand());
@@ -18,7 +23,6 @@ describe("path overview commands", () => {
   beforeEach(() => {
     vi.mocked(sharedModule.resolveCommandContext).mockResolvedValue({
       baseUrl: "https://api.example.com",
-      client: { get: vi.fn() } as never,
       config: {
         active_profile: "dev",
         api_url: "https://api.example.com",
@@ -35,6 +39,7 @@ describe("path overview commands", () => {
       },
       env: {
         apiUrl: undefined,
+        authApiUrl: undefined,
         forceColor: false,
         noColor: false,
         profile: undefined,
@@ -52,29 +57,33 @@ describe("path overview commands", () => {
   });
 
   it("runs overview", async () => {
-    vi.mocked(pathApi.getOverview).mockResolvedValue({
-      channelCount: 3,
-      eventCount: 4,
-      peopleCount: 5,
-    });
+    vi.mocked(Overview.getOverview).mockResolvedValue({
+      data: {
+        channelCount: 3,
+        eventCount: 4,
+        peopleCount: 5,
+      },
+    } as any);
 
     await createRoot().parseAsync(["node", "test", "--format", "json", "path", "overview"]);
 
     expect(sharedModule.requireAuth).toHaveBeenCalledTimes(1);
-    expect(pathApi.getOverview).toHaveBeenCalledTimes(1);
+    expect(Overview.getOverview).toHaveBeenCalledTimes(1);
     expect(mockFormatter.output).toHaveBeenCalledTimes(1);
   });
 
   it("forwards timezone to overview stats", async () => {
-    vi.mocked(pathApi.getOverviewStats).mockResolvedValue({
-      latestTrend: [],
-      newPeopleThisMonth: 2,
-      topChannels: [],
-      totalChannels: 3,
-      totalCompanies: 1,
-      totalEvents: 4,
-      totalPeople: 5,
-    });
+    vi.mocked(Overview.getStats).mockResolvedValue({
+      data: {
+        latestTrend: [],
+        newPeopleThisMonth: 2,
+        topChannels: [],
+        totalChannels: 3,
+        totalCompanies: 1,
+        totalEvents: 4,
+        totalPeople: 5,
+      },
+    } as any);
 
     await createRoot().parseAsync([
       "node",
@@ -88,6 +97,8 @@ describe("path overview commands", () => {
       "Asia/Seoul",
     ]);
 
-    expect(pathApi.getOverviewStats).toHaveBeenCalledWith(expect.anything(), "Asia/Seoul");
+    expect(Overview.getStats).toHaveBeenCalledWith({
+      query: { timeZone: "Asia/Seoul" },
+    });
   });
 });

@@ -1,24 +1,30 @@
 import { Command } from "commander";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ApiClient } from "../../../../src/api/client.js";
-import type { PersonDetailRes, PersonPageRes } from "../../../../src/api/generated/index.js";
-import * as pathApi from "../../../../src/api/path.js";
+import { Person } from "../../../../src/api/generated/path/sdk.gen.js";
+import type {
+  PersonDetailRes,
+  PersonPageRes,
+} from "../../../../src/api/generated/path/types.gen.js";
 import { createPersonCommand } from "../../../../src/commands/path/person.js";
 import { UsageError } from "../../../../src/errors/index.js";
 import type { Formatter, OutputContext } from "../../../../src/output/index.js";
+import * as sharedModule from "../../../../src/shared/context.js";
 
-vi.mock("../../../../src/api/path.js", () => ({
-  deletePerson: vi.fn(),
-  exportPersons: vi.fn(),
-  getPerson: vi.fn(),
-  listPersons: vi.fn(),
-  mergePersons: vi.fn(),
-  updatePerson: vi.fn(),
+vi.mock("../../../../src/shared/context.js");
+
+vi.mock("../../../../src/api/generated/path/sdk.gen.js", () => ({
+  Person: {
+    listPeople: vi.fn(),
+    getPerson: vi.fn(),
+    updatePerson: vi.fn(),
+    deletePerson: vi.fn(),
+    mergePerson: vi.fn(),
+    exportPeopleCsv: vi.fn(),
+  },
 }));
 
 interface CommandHarness {
-  client: ApiClient;
   formatter: Formatter;
   run: (argv: string[]) => Promise<void>;
   writeStdout: ReturnType<typeof vi.fn<(text: string) => void>>;
@@ -28,35 +34,6 @@ interface FormatterDouble extends Formatter {
   error: ReturnType<typeof vi.fn<Formatter["error"]>>;
   list: ReturnType<typeof vi.fn<Formatter["list"]>>;
   output: ReturnType<typeof vi.fn<Formatter["output"]>>;
-}
-
-function createClientStub(): ApiClient {
-  return {
-    delete: async <TResponse>(): Promise<TResponse> => {
-      throw new Error("not implemented");
-    },
-    get: async <TResponse>(): Promise<TResponse> => {
-      throw new Error("not implemented");
-    },
-    patch: async <TResponse>(): Promise<TResponse> => {
-      throw new Error("not implemented");
-    },
-    post: async <TResponse>(): Promise<TResponse> => {
-      throw new Error("not implemented");
-    },
-    put: async <TResponse>(): Promise<TResponse> => {
-      throw new Error("not implemented");
-    },
-    requestJson: async <TResponse>(): Promise<TResponse> => {
-      throw new Error("not implemented");
-    },
-    requestResponse: async (): Promise<Response> => {
-      throw new Error("not implemented");
-    },
-    requestText: async (): Promise<string> => {
-      throw new Error("not implemented");
-    },
-  };
 }
 
 function createFormatterDouble(): FormatterDouble {
@@ -70,11 +47,34 @@ function createFormatterDouble(): FormatterDouble {
 }
 
 function createHarness(): CommandHarness {
-  const client = createClientStub();
   const formatter = createFormatterDouble();
   const writeStdout = vi.fn<(text: string) => void>();
+
+  // Mock resolveCommandContext and requireAuth so ensureAuth passes
+  vi.mocked(sharedModule.resolveCommandContext).mockResolvedValue({
+    baseUrl: "https://api.example.com",
+    config: {
+      active_profile: "dev",
+      api_url: "https://api.example.com",
+      client_id: "client_123",
+      profiles: {},
+      version: 1,
+    },
+    env: {
+      apiUrl: undefined,
+      authApiUrl: undefined,
+      forceColor: false,
+      noColor: false,
+      profile: undefined,
+      token: "test-token",
+    },
+    formatter,
+    output: {},
+    profile: "dev",
+  });
+  vi.mocked(sharedModule.requireAuth).mockResolvedValue(undefined);
+
   const command = createPersonCommand({
-    client,
     formatter,
     writeStdout,
   });
@@ -83,7 +83,6 @@ function createHarness(): CommandHarness {
   program.addCommand(command);
 
   return {
-    client,
     formatter,
     run: async (argv: string[]): Promise<void> => {
       await program.parseAsync(["person", ...argv], { from: "user" });
@@ -106,7 +105,7 @@ describe("createPersonCommand", () => {
       totalElements: 0,
       totalPages: 0,
     };
-    vi.mocked(pathApi.listPersons).mockResolvedValueOnce(page);
+    vi.mocked(Person.listPeople).mockResolvedValueOnce({ data: page } as any);
 
     await harness.run([
       "list",
@@ -132,15 +131,17 @@ describe("createPersonCommand", () => {
       "createdAt,desc",
     ]);
 
-    expect(pathApi.listPersons).toHaveBeenCalledWith(harness.client, {
-      channelId: [12, 13],
-      companyName: "TalkValue",
-      eventId: [4],
-      jobTitle: "Engineer",
-      keyword: "alice",
-      pageNumber: 3,
-      pageSize: 15,
-      sort: ["name,asc", "createdAt,desc"],
+    expect(Person.listPeople).toHaveBeenCalledWith({
+      query: {
+        channelId: [12, 13],
+        companyName: "TalkValue",
+        eventId: [4],
+        jobTitle: "Engineer",
+        keyword: "alice",
+        pageNumber: 3,
+        pageSize: 15,
+        sort: ["name,asc", "createdAt,desc"],
+      },
     });
     expect(harness.formatter.list).toHaveBeenCalledWith([], expect.any(Array), {
       pagination: {
@@ -155,17 +156,17 @@ describe("createPersonCommand", () => {
   it("parses get id and calls getPerson", async () => {
     const harness = createHarness();
     const person = { id: 21 } as PersonDetailRes;
-    vi.mocked(pathApi.getPerson).mockResolvedValueOnce(person);
+    vi.mocked(Person.getPerson).mockResolvedValueOnce({ data: person } as any);
 
     await harness.run(["get", "21"]);
 
-    expect(pathApi.getPerson).toHaveBeenCalledWith(harness.client, 21);
+    expect(Person.getPerson).toHaveBeenCalledWith({ path: { id: 21 } });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
   it("forwards only provided update fields", async () => {
     const harness = createHarness();
-    vi.mocked(pathApi.updatePerson).mockResolvedValueOnce({ id: 2 } as PersonDetailRes);
+    vi.mocked(Person.updatePerson).mockResolvedValueOnce({ data: { id: 2 } } as any);
 
     await harness.run([
       "update",
@@ -178,10 +179,13 @@ describe("createPersonCommand", () => {
       "Analytical Engines",
     ]);
 
-    expect(pathApi.updatePerson).toHaveBeenCalledWith(harness.client, 2, {
-      companyName: "Analytical Engines",
-      firstName: "Ada",
-      primaryEmail: "ada@example.com",
+    expect(Person.updatePerson).toHaveBeenCalledWith({
+      path: { id: 2 },
+      body: {
+        companyName: "Analytical Engines",
+        firstName: "Ada",
+        primaryEmail: "ada@example.com",
+      },
     });
   });
 
@@ -189,16 +193,16 @@ describe("createPersonCommand", () => {
     const harness = createHarness();
 
     await expect(harness.run(["delete", "9"])).rejects.toBeInstanceOf(UsageError);
-    expect(pathApi.deletePerson).not.toHaveBeenCalled();
+    expect(Person.deletePerson).not.toHaveBeenCalled();
   });
 
   it("deletes when --confirm is provided", async () => {
     const harness = createHarness();
-    vi.mocked(pathApi.deletePerson).mockResolvedValueOnce(undefined);
+    vi.mocked(Person.deletePerson).mockResolvedValueOnce({ data: undefined } as any);
 
     await harness.run(["delete", "9", "--confirm"]);
 
-    expect(pathApi.deletePerson).toHaveBeenCalledWith(harness.client, 9);
+    expect(Person.deletePerson).toHaveBeenCalledWith({ path: { id: 9 } });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
@@ -206,29 +210,30 @@ describe("createPersonCommand", () => {
     const harness = createHarness();
 
     await expect(harness.run(["merge", "5", "8"])).rejects.toBeInstanceOf(UsageError);
-    expect(pathApi.mergePersons).not.toHaveBeenCalled();
+    expect(Person.mergePerson).not.toHaveBeenCalled();
   });
 
   it("merges when --confirm is provided", async () => {
     const harness = createHarness();
-    vi.mocked(pathApi.mergePersons).mockResolvedValueOnce({ id: 8 } as PersonDetailRes);
+    vi.mocked(Person.mergePerson).mockResolvedValueOnce({ data: { id: 8 } } as any);
 
     await harness.run(["merge", "5", "8", "--confirm"]);
 
-    expect(pathApi.mergePersons).toHaveBeenCalledWith(harness.client, 5, 8);
+    expect(Person.mergePerson).toHaveBeenCalledWith({ path: { sourceId: 5, targetId: 8 } });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
   it("exports CSV via raw stdout", async () => {
     const harness = createHarness();
-    vi.mocked(pathApi.exportPersons).mockResolvedValueOnce("id,name\n1,Alice\n");
+    vi.mocked(Person.exportPeopleCsv).mockResolvedValueOnce({
+      data: undefined,
+      response: { text: async () => "id,name\n1,Alice\n" } as any,
+    } as any);
 
-    await harness.run(["export", "--keyword", "alice", "--page", "2", "--sort", "name,asc"]);
+    await harness.run(["export"]);
 
-    expect(pathApi.exportPersons).toHaveBeenCalledWith(harness.client, {
-      keyword: "alice",
-      pageNumber: 2,
-      sort: ["name,asc"],
+    expect(Person.exportPeopleCsv).toHaveBeenCalledWith({
+      parseAs: "stream",
     });
     expect(harness.writeStdout).toHaveBeenCalledWith("id,name\n1,Alice\n");
     expect(harness.formatter.output).not.toHaveBeenCalled();
