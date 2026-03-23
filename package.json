@@ -1,0 +1,67 @@
+{
+  "name": "@talkvalue/cli",
+  "version": "1.0.0",
+  "description": "TalkValue CLI — manage your contacts and channels",
+  "type": "module",
+  "bin": {
+    "talkvalue": "dist/cli.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "talkvalue",
+    "cli",
+    "contacts",
+    "channels"
+  ],
+  "author": "TalkValue",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/talkvalue/cli.git"
+  },
+  "homepage": "https://github.com/talkvalue/cli#readme",
+  "bugs": {
+    "url": "https://github.com/talkvalue/cli/issues"
+  },
+  "packageManager": "pnpm@10.13.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "@napi-rs/keyring": "^1.2.0",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^24",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
