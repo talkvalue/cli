@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/talkvalue/cli/compare/v1.1.1...v1.1.2) (2026-03-24)
+
+
+### Bug Fixes
+
+* resolve auth race conditions, pagination shadowing, output correctness ([be0b451](https://github.com/talkvalue/cli/commit/be0b4519affa72b0d34ed1e8516f986973f3ccaa))
+
 ## [1.1.1](https://github.com/talkvalue/cli/compare/v1.1.0...v1.1.1) (2026-03-24)
 
 
