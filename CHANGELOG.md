@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/talkvalue/cli/compare/v1.1.0...v1.1.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* add 401 token refresh retry, remove org id from prompt ([6b53a4b](https://github.com/talkvalue/cli/commit/6b53a4b15a68cf8bedafa117959edd7745d94155))
+
 ## [1.1.0](https://github.com/talkvalue/cli/compare/v1.0.1...v1.1.0) (2026-03-23)
 
 
