@@ -56,8 +56,8 @@ describe("selectOrganization", () => {
     expect(select).toHaveBeenCalledWith({
       message: "Select an organization",
       choices: [
-        { name: "Alpha Corp", value: orgs[0], description: "org_01" },
-        { name: "Beta Inc", value: orgs[1], description: "org_02" },
+        { name: "Alpha Corp", value: orgs[0] },
+        { name: "Beta Inc", value: orgs[1] },
       ],
     });
   });

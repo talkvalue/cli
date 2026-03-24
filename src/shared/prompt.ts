@@ -46,7 +46,6 @@ export async function selectOrganization(
     choices: organizations.map((org) => ({
       name: org.name,
       value: org,
-      description: org.id,
     })),
   });
 }

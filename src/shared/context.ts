@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 
 import { configureClients } from "../api/interceptors.js";
+import { createStoredTokenRefreshHandler } from "../auth/refresh.js";
 import { getAccessToken } from "../auth/token.js";
 import { loadConfig } from "../config/config.js";
 import { resolveEnv } from "../config/env.js";
@@ -56,6 +57,15 @@ export async function resolveCommandContext(command: Command): Promise<CommandCo
   configureClients({
     baseUrl,
     auth: async () => env.token ?? (profile ? await getAccessToken(profile) : undefined),
+    onRefreshToken: profile
+      ? createStoredTokenRefreshHandler({
+          authApiUrl: env.authApiUrl,
+          clientId: config.client_id,
+          env,
+          organizationId: config.profiles[profile]?.org_id,
+          profile,
+        })
+      : undefined,
   });
 
   return {
