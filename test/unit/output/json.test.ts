@@ -82,7 +82,7 @@ describe.sequential("JsonFormatter", () => {
   it("outputs error payload", () => {
     const formatter = new JsonFormatter();
     const err = new Error("boom");
-    const writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    const writeSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 
     try {
       formatter.error(err, createContext());

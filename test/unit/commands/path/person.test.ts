@@ -11,7 +11,15 @@ import { UsageError } from "../../../../src/errors/index.js";
 import type { Formatter, OutputContext } from "../../../../src/output/index.js";
 import * as sharedModule from "../../../../src/shared/context.js";
 
-vi.mock("../../../../src/shared/context.js");
+vi.mock("../../../../src/shared/context.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../../src/shared/context.js")>();
+  return {
+    ...actual,
+    resolveCommandContext: vi.fn(),
+    requireAuth: vi.fn(),
+    ensureAuth: vi.fn().mockResolvedValue(undefined),
+  };
+});
 
 vi.mock("../../../../src/api/generated/path/sdk.gen.js", () => ({
   Person: {

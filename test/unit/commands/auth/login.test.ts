@@ -12,6 +12,7 @@ import { decodeIdToken } from "../../../../src/auth/id-token.js";
 import { storeTokens } from "../../../../src/auth/token.js";
 import { createAuthLoginCommand } from "../../../../src/commands/auth/login.js";
 import { createProfile } from "../../../../src/config/config.js";
+import { AuthError } from "../../../../src/errors/cli-error.js";
 import type { Formatter, OutputContext } from "../../../../src/output/index.js";
 import { resolveCommandContext } from "../../../../src/shared/context.js";
 import { selectOrganization } from "../../../../src/shared/prompt.js";
@@ -350,5 +351,41 @@ describe("createAuthLoginCommand", () => {
         member_email: "Ted.Smith+dev@example.com",
       }),
     );
+  });
+
+  it("login with missing refresh_token in server response throws AuthError", async () => {
+    const context = createMockContext();
+    vi.mocked(resolveCommandContext)
+      .mockResolvedValueOnce(context as never)
+      .mockResolvedValueOnce(context as never);
+
+    setupDeviceFlow();
+
+    vi.mocked(pollForToken).mockResolvedValue({
+      access_token: "access_initial",
+      expires_in: 3600,
+      id_token: "id_token_123",
+      refresh_token: undefined,
+      token_type: "Bearer",
+    });
+
+    vi.mocked(Organization.getOrganizations).mockResolvedValue({
+      data: { data: [{ id: "org_abc", name: "Acme Corp" }] },
+    } as any);
+
+    vi.mocked(selectOrganization).mockResolvedValue({
+      id: "org_abc",
+      name: "Acme Corp",
+    });
+
+    let thrown: unknown;
+    try {
+      await runLoginCommand();
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(AuthError);
+    expect((thrown as AuthError).message).toMatch(/please try logging in again/i);
   });
 });

@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 
+import { DEFAULT_TIMEOUT_MS, POLL_TIMEOUT_MS } from "../api/constants.js";
 import { AuthError } from "../errors/index.js";
 
 const WORKOS_API_BASE = "https://api.workos.com";
@@ -152,6 +153,7 @@ export const requestDeviceCode = async (
       "content-type": FORM_URLENCODED,
     },
     method: "POST",
+    signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
   });
 
   const payload = await parseJson(response);
@@ -186,6 +188,7 @@ export const pollForToken = async (params: PollForTokenParams): Promise<TokenRes
         "content-type": FORM_URLENCODED,
       },
       method: "POST",
+      signal: AbortSignal.timeout(POLL_TIMEOUT_MS),
     });
 
     const payload = await parseJson(response);
@@ -236,6 +239,7 @@ export const authenticateWithRefreshToken = async (
       "content-type": JSON_CONTENT_TYPE,
     },
     method: "POST",
+    signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
   });
 
   const payload = await parseJson(response);

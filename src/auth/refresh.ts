@@ -36,7 +36,7 @@ export function createStoredTokenRefreshHandler(
       accessToken: refreshed.access_token,
       expiresAt: resolveExpiry(refreshed.expires_in),
       idToken: refreshed.id_token,
-      refreshToken: refreshed.refresh_token ?? currentRefreshToken,
+      refreshToken: refreshed.refresh_token || currentRefreshToken,
     });
 
     return true;

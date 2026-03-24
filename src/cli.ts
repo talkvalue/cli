@@ -16,11 +16,10 @@ export function createProgram(): Command {
     .version(CLI_VERSION)
     .configureHelp({ showGlobalOptions: true })
     .option("--format <format>", "output format (json|table|csv)")
+    .option("--json", "shorthand for --format json")
     .option("--profile <name>", "profile to use")
     .option("--api-url <url>", "API base URL override")
     .option("--no-color", "disable colored output")
-    .option("--page <n>", "page number", Number.parseInt)
-    .option("--page-size <n>", "page size", Number.parseInt)
     .addCommand(createAuthCommand())
     .addCommand(createPathCommand())
     .addCommand(createConfigCommand())
@@ -33,7 +32,8 @@ export async function main(argv = process.argv): Promise<void> {
   try {
     await program.parseAsync(argv);
   } catch (error) {
-    const format = detectFormat(program.opts<{ format?: string }>().format);
+    const opts = program.opts<{ format?: string; json?: boolean }>();
+    const format = detectFormat(opts.json ? "json" : opts.format);
     const formatter = createFormatter(format);
     const output = {};
 

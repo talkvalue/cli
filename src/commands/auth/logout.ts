@@ -1,11 +1,12 @@
 import { Command } from "commander";
 
 import { clearTokens } from "../../auth/token.js";
+import { deleteProfile } from "../../config/config.js";
 import { resolveCommandContext } from "../../shared/context.js";
 
 export function createAuthLogoutCommand(): Command {
   const logoutCommand = new Command("logout").description(
-    "Clear authentication for the active profile",
+    "Remove authentication and profile for the active account",
   );
 
   logoutCommand.action(async () => {
@@ -20,10 +21,11 @@ export function createAuthLogoutCommand(): Command {
     }
 
     await clearTokens(context.profile);
+    await deleteProfile(context.profile);
 
     context.formatter.output(
       {
-        loggedIn: false,
+        loggedOut: true,
         profile: context.profile,
       },
       context.output,

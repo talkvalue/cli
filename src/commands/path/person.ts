@@ -5,9 +5,8 @@ import type { UpdatePersonReq } from "../../api/generated/path/types.gen.js";
 import type { PersonFilterParams } from "../../api/types.js";
 import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
-import { createFormatter, detectFormat } from "../../output/index.js";
 import type { ColumnDef, Formatter, OutputContext } from "../../output/index.js";
-import { requireAuth, resolveCommandContext } from "../../shared/context.js";
+import { ensureAuth, resolveFormatter } from "../../shared/context.js";
 
 interface PersonCommandDependencies {
   formatter?: Formatter;
@@ -50,6 +49,8 @@ const PERSON_LIST_COLUMNS: ColumnDef[] = [
   { header: "Primary Email", key: "primaryEmail" },
   { header: "Company", key: "companyName" },
   { header: "Job Title", key: "jobTitle" },
+  { header: "Joined At", key: "joinedAt" },
+  { header: "Created At", key: "createdAt" },
 ];
 
 function parseInteger(value: string, label: string): number {
@@ -180,20 +181,6 @@ function ensureConfirmed(confirmed: boolean | undefined, action: string): void {
   }
 }
 
-function resolveFormatter(command: Command, dependencies: PersonCommandDependencies): Formatter {
-  if (dependencies.formatter !== undefined) {
-    return dependencies.formatter;
-  }
-
-  const globals = command.optsWithGlobals<{ format?: string }>();
-  return createFormatter(detectFormat(globals.format));
-}
-
-async function ensureAuth(command: Command): Promise<void> {
-  const context = await resolveCommandContext(command);
-  await requireAuth(context);
-}
-
 function resolveWriteStdout(dependencies: PersonCommandDependencies): (text: string) => void {
   if (dependencies.writeStdout !== undefined) {
     return dependencies.writeStdout;
@@ -226,11 +213,8 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
       const { data } = await Person.listPeople({ query: filters });
       const list = unwrap(data, "people");
       const rows = list.content.map((person) => ({
+        ...person,
         companyName: person.company?.displayName ?? null,
-        id: person.id,
-        jobTitle: person.jobTitle,
-        name: person.name,
-        primaryEmail: person.primaryEmail,
       }));
 
       formatter.list(

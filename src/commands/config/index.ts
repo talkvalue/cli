@@ -5,13 +5,10 @@ import type { Config } from "../../config/index.js";
 import { UsageError } from "../../errors/index.js";
 import { createFormatter, detectFormat } from "../../output/index.js";
 import type { OutputContext } from "../../output/index.js";
+import { isRecord } from "../../shared/utils.js";
 
 function createOutputContext(): OutputContext {
   return {};
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function getAtPath(source: Config, path: string): unknown {
@@ -65,7 +62,28 @@ async function outputConfigValue(key: string, command: Command): Promise<void> {
   formatter.output({ key, value }, createOutputContext());
 }
 
+const SETTABLE_KEYS = new Set(["api_url", "client_id", "active_profile"]);
+const MANAGED_KEYS = new Set(["version", "profiles"]);
+
+function validateConfigKey(key: string): void {
+  const rootKey = key.split(".")[0];
+
+  if (SETTABLE_KEYS.has(rootKey)) {
+    return;
+  }
+
+  if (MANAGED_KEYS.has(rootKey)) {
+    throw new UsageError(`"${rootKey}" is a managed config field and cannot be set directly.`);
+  }
+
+  throw new UsageError(
+    `Unknown config key "${key}". Settable keys: ${[...SETTABLE_KEYS].join(", ")}`,
+  );
+}
+
 async function setConfigValue(key: string, value: string, command: Command): Promise<void> {
+  validateConfigKey(key);
+
   const globals = command.optsWithGlobals<{ format?: string }>();
   const formatter = createFormatter(detectFormat(globals.format));
   const config = await loadConfig();

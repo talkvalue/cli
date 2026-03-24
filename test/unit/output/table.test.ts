@@ -63,7 +63,7 @@ describe.sequential("TableFormatter", () => {
 
   it("renders errors", () => {
     const formatter = new TableFormatter();
-    const writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    const writeSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 
     try {
       formatter.error(new Error("bad request"), {});

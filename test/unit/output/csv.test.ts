@@ -56,7 +56,7 @@ describe.sequential("CsvFormatter", () => {
 
   it("prints simple error csv", () => {
     const formatter = new CsvFormatter();
-    const writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    const writeSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 
     try {
       formatter.error(new Error("oops"), {

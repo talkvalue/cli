@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { clearTokens } from "../../../../src/auth/token.js";
 import { createAuthLogoutCommand } from "../../../../src/commands/auth/logout.js";
+import { deleteProfile } from "../../../../src/config/config.js";
 import type { Formatter } from "../../../../src/output/index.js";
 import { resolveCommandContext } from "../../../../src/shared/context.js";
 
@@ -12,6 +13,10 @@ vi.mock("../../../../src/shared/context.js", () => ({
 
 vi.mock("../../../../src/auth/token.js", () => ({
   clearTokens: vi.fn(),
+}));
+
+vi.mock("../../../../src/config/config.js", () => ({
+  deleteProfile: vi.fn(),
 }));
 
 function createMockFormatter(): Formatter {
@@ -63,9 +68,10 @@ describe("createAuthLogoutCommand", () => {
     await runLogoutCommand();
 
     expect(clearTokens).toHaveBeenCalledWith("dev");
+    expect(deleteProfile).toHaveBeenCalledWith("dev");
     expect(formatter.output).toHaveBeenCalledWith(
       {
-        loggedIn: false,
+        loggedOut: true,
         profile: "dev",
       },
       output,

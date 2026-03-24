@@ -15,7 +15,7 @@ export interface StoredTokens {
   accessToken: string;
   expiresAt?: string;
   idToken?: string;
-  refreshToken: string;
+  refreshToken: string | undefined;
 }
 
 function createAccountKey(profile: string, key: string): string {
@@ -79,7 +79,10 @@ export async function storeTokens(profile: string, tokens: StoredTokens): Promis
   const expiresAt = parseExpiryFromJwt(tokens.accessToken) ?? tokens.expiresAt;
 
   await setCredential(createAccountKey(profile, ACCESS_TOKEN_KEY), tokens.accessToken);
-  await setCredential(createAccountKey(profile, REFRESH_TOKEN_KEY), tokens.refreshToken);
+  await setOptionalCredential(
+    createAccountKey(profile, REFRESH_TOKEN_KEY),
+    tokens.refreshToken || undefined,
+  );
   await setOptionalCredential(createAccountKey(profile, ID_TOKEN_KEY), tokens.idToken);
   await setOptionalCredential(createAccountKey(profile, EXPIRES_AT_KEY), expiresAt);
 }

@@ -26,13 +26,18 @@ export class TableFormatter implements Formatter {
     process.stdout.write(`${this.renderTable(rows, columns)}\n`);
   }
 
-  list(items: Record<string, unknown>[], columns: ColumnDef[], _ctx: OutputContext): void {
-    process.stdout.write(`${this.renderTable(items, columns)}\n`);
+  list(items: Record<string, unknown>[], columns: ColumnDef[], ctx: OutputContext): void {
+    let output = this.renderTable(items, columns);
+    if (ctx.pagination) {
+      const { page, totalPages, totalElements } = ctx.pagination;
+      output += `\n${chalk.dim(`Page ${page} of ${totalPages} (${totalElements} total)`)}`;
+    }
+    process.stdout.write(`${output}\n`);
   }
 
   error(error: Error, _ctx: OutputContext): void {
     const content = `${chalk.red.bold("Error")}: ${error.message}`;
-    process.stdout.write(`${content}\n`);
+    process.stderr.write(`${content}\n`);
   }
 
   private renderTable(rows: Record<string, unknown>[], columns: ColumnDef[]): string {

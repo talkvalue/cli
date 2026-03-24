@@ -2,6 +2,7 @@ import { chmod, readFile, rename, unlink, writeFile } from "node:fs/promises";
 
 import YAML from "yaml";
 
+import { isRecord } from "../shared/utils.js";
 import { ensureConfigDir, getConfigFilePath } from "./paths.js";
 
 export interface Config {
@@ -26,10 +27,6 @@ const DEFAULT_CONFIG: Config = {
   active_profile: "",
   profiles: {},
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
 
 function parseString(value: unknown, fallback: string): string {
   return typeof value === "string" ? value : fallback;

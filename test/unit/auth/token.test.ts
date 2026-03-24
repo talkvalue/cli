@@ -137,4 +137,28 @@ describe("token manager", () => {
 
     expect(credentialStore.get("talkvalue:dev:expires_at")).toBe(fallbackExpiry);
   });
+
+  it("storeTokens with undefined refreshToken skips credential write", async () => {
+    const { storeTokens } = await import("../../../src/auth/token.js");
+
+    await storeTokens("dev", {
+      accessToken: "stored-access-token",
+      refreshToken: undefined,
+    });
+
+    expect(credentialStore.has("talkvalue:dev:access_token")).toBe(true);
+    expect(credentialStore.has("talkvalue:dev:refresh_token")).toBe(false);
+  });
+
+  it("storeTokens with empty string refreshToken skips credential write", async () => {
+    const { storeTokens } = await import("../../../src/auth/token.js");
+
+    await storeTokens("dev", {
+      accessToken: "stored-access-token",
+      refreshToken: "",
+    });
+
+    expect(credentialStore.has("talkvalue:dev:access_token")).toBe(true);
+    expect(credentialStore.has("talkvalue:dev:refresh_token")).toBe(false);
+  });
 });

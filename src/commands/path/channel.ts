@@ -9,9 +9,8 @@ import type {
 import type { PersonFilterParams } from "../../api/types.js";
 import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
-import { createFormatter, detectFormat } from "../../output/index.js";
 import type { Formatter, OutputContext } from "../../output/index.js";
-import { requireAuth, resolveCommandContext } from "../../shared/context.js";
+import { ensureAuth, resolveFormatter } from "../../shared/context.js";
 
 const CHANNEL_COLUMNS = [
   { header: "ID", key: "id" },
@@ -95,20 +94,6 @@ function toOutputContext(pagination?: OutputContext["pagination"]): OutputContex
 
 function collectValues(value: string, previous: string[]): string[] {
   return [...previous, value];
-}
-
-function resolveFormatter(command: Command, options: CreateChannelCommandOptions): Formatter {
-  if (options.formatter !== undefined) {
-    return options.formatter;
-  }
-
-  const globals = command.optsWithGlobals<{ format?: string }>();
-  return createFormatter(detectFormat(globals.format));
-}
-
-async function ensureAuth(command: Command): Promise<void> {
-  const context = await resolveCommandContext(command);
-  await requireAuth(context);
 }
 
 function pickDefined<TValue extends object>(value: TValue): Partial<TValue> {

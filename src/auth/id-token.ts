@@ -1,3 +1,4 @@
+import { isRecord } from "../shared/utils.js";
 import { decodeJwtPayload } from "./jwt.js";
 
 export interface IdTokenClaims {
@@ -5,10 +6,6 @@ export interface IdTokenClaims {
   org_id?: string;
   org_name?: string;
   sub?: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function optionalString(value: unknown): string | undefined {

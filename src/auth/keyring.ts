@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { AsyncEntry } from "@napi-rs/keyring";
 
 import { ensureConfigDir, getConfigDir } from "../config/paths.js";
+import { isRecord } from "../shared/utils.js";
 
 export const KEYRING_FALLBACK_FILE_NAME = "keyring.json";
 export const KEYRING_SERVICE_NAME = "talkvalue-cli";
@@ -14,10 +15,6 @@ let storageBackendPromise: Promise<StorageBackend> | undefined;
 
 function getFallbackPath(): string {
   return join(getConfigDir(), KEYRING_FALLBACK_FILE_NAME);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function parseFallbackStore(content: string): StoredCredentials {

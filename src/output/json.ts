@@ -32,7 +32,7 @@ export class JsonFormatter implements Formatter {
       ...(ctx.pagination ? { pagination: ctx.pagination } : {}),
     };
 
-    this.write(payload);
+    process.stderr.write(`${JSON.stringify(payload, null, 2)}\n`);
   }
 
   private write(payload: object): void {

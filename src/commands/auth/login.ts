@@ -11,6 +11,7 @@ import {
 import { decodeIdToken } from "../../auth/id-token.js";
 import { resolveExpiry, storeTokens } from "../../auth/token.js";
 import { createProfile } from "../../config/config.js";
+import { AuthError } from "../../errors/cli-error.js";
 import { resolveCommandContext } from "../../shared/context.js";
 import { selectOrganization } from "../../shared/prompt.js";
 
@@ -81,11 +82,13 @@ export function createAuthLoginCommand(): Command {
     // 2. Store initial tokens temporarily to make API calls
     const profileName = context.profile.length > 0 ? context.profile : deriveProfileName(email);
 
+    const refreshToken = token.refresh_token || undefined;
+
     await storeTokens(profileName, {
       accessToken: token.access_token,
       expiresAt: resolveExpiry(token.expires_in),
       idToken: token.id_token,
-      refreshToken: token.refresh_token ?? "",
+      refreshToken,
     });
 
     await createProfile(profileName, {
@@ -101,10 +104,14 @@ export function createAuthLoginCommand(): Command {
     const organizations = orgList?.data ?? [];
     const selectedOrg = await selectOrganization(organizations, orgFlag);
 
+    if (!refreshToken) {
+      throw new AuthError("Server did not return a refresh token. Please try logging in again.");
+    }
+
     // 4. Re-authenticate with selected org
     const orgToken = await authenticateWithRefreshToken({
       clientId: context.config.client_id,
-      refreshToken: token.refresh_token ?? "",
+      refreshToken,
       organizationId: selectedOrg.id,
       ...(authApiOverride ? { apiBaseUrl: authApiOverride } : {}),
     });
@@ -114,7 +121,7 @@ export function createAuthLoginCommand(): Command {
       accessToken: orgToken.access_token,
       expiresAt: resolveExpiry(orgToken.expires_in),
       idToken: orgToken.id_token,
-      refreshToken: orgToken.refresh_token ?? token.refresh_token ?? "",
+      refreshToken: orgToken.refresh_token || refreshToken,
     });
 
     await createProfile(profileName, {

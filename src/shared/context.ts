@@ -14,6 +14,7 @@ import type { Formatter, OutputContext } from "../output/index.js";
 interface CommandGlobalOptions {
   apiUrl?: string;
   format?: string;
+  json?: boolean;
   profile?: string;
 }
 
@@ -52,7 +53,8 @@ export async function resolveCommandContext(command: Command): Promise<CommandCo
   const commandOptions = command.optsWithGlobals<CommandGlobalOptions>();
   const profile = resolveProfile(commandOptions, env, config);
   const baseUrl = resolveBaseUrl(commandOptions, env, config);
-  const formatter = createFormatter(detectFormat(commandOptions.format));
+  const formatValue = commandOptions.json ? "json" : commandOptions.format;
+  const formatter = createFormatter(detectFormat(formatValue));
 
   configureClients({
     baseUrl,
@@ -76,6 +78,24 @@ export async function resolveCommandContext(command: Command): Promise<CommandCo
     output: createOutputContext(),
     profile,
   };
+}
+
+export async function ensureAuth(command: Command): Promise<void> {
+  const context = await resolveCommandContext(command);
+  await requireAuth(context);
+}
+
+export function resolveFormatter(
+  command: Command,
+  dependencies: { formatter?: Formatter },
+): Formatter {
+  if (dependencies.formatter !== undefined) {
+    return dependencies.formatter;
+  }
+
+  const globals = command.optsWithGlobals<{ format?: string; json?: boolean }>();
+  const formatValue = globals.json ? "json" : globals.format;
+  return createFormatter(detectFormat(formatValue));
 }
 
 export async function requireAuth(context: CommandContext): Promise<void> {

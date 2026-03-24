@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createConfigCommand } from "../../../src/commands/config/index.js";
 import * as configModule from "../../../src/config/config.js";
+import { UsageError } from "../../../src/errors/index.js";
 
 function createRoot(): Command {
   return new Command().option("--format <format>").addCommand(createConfigCommand());
@@ -57,11 +58,8 @@ describe("config commands", () => {
     expect(parsed.data).toEqual({ key: "api_url", value: "https://api.trytalkvalue.com" });
   });
 
-  it("sets a nested config value", async () => {
-    const saveConfigSpy = vi.spyOn(configModule, "saveConfig").mockResolvedValue(undefined);
-    const stdout = captureStdout();
-
-    await createRoot().parseAsync([
+  it("config set profiles sub-key rejects with UsageError", async () => {
+    const promise = createRoot().parseAsync([
       "node",
       "test",
       "--format",
@@ -72,8 +70,86 @@ describe("config commands", () => {
       "org_new",
     ]);
 
+    await expect(promise).rejects.toBeInstanceOf(UsageError);
+    await expect(promise).rejects.toThrow("managed config field");
+  });
+
+  it("config set api_url with valid URL stores correctly", async () => {
+    const saveConfigSpy = vi.spyOn(configModule, "saveConfig").mockResolvedValue(undefined);
+    const stdout = captureStdout();
+
+    await createRoot().parseAsync([
+      "node",
+      "test",
+      "--format",
+      "json",
+      "config",
+      "set",
+      "api_url",
+      "https://api.example.com",
+    ]);
+
     stdout.restore();
     expect(saveConfigSpy).toHaveBeenCalledTimes(1);
+    const parsed = JSON.parse(stdout.output.join("")) as { data: { key: string; value: string } };
+    expect(parsed.data).toEqual({ key: "api_url", value: "https://api.example.com" });
+  });
+
+  it("config set version rejects with UsageError", async () => {
+    const stdout = captureStdout();
+
+    const promise = createRoot().parseAsync([
+      "node",
+      "test",
+      "--format",
+      "json",
+      "config",
+      "set",
+      "version",
+      "2",
+    ]);
+
+    await expect(promise).rejects.toBeInstanceOf(UsageError);
+    await expect(promise).rejects.toThrow("managed config field");
+    stdout.restore();
+  });
+
+  it("config set profiles rejects with UsageError", async () => {
+    const stdout = captureStdout();
+
+    const promise = createRoot().parseAsync([
+      "node",
+      "test",
+      "--format",
+      "json",
+      "config",
+      "set",
+      "profiles",
+      "{}",
+    ]);
+
+    await expect(promise).rejects.toBeInstanceOf(UsageError);
+    await expect(promise).rejects.toThrow("managed config field");
+    stdout.restore();
+  });
+
+  it("config set unknown_key rejects with UsageError", async () => {
+    const stdout = captureStdout();
+
+    const promise = createRoot().parseAsync([
+      "node",
+      "test",
+      "--format",
+      "json",
+      "config",
+      "set",
+      "foo",
+      "bar",
+    ]);
+
+    await expect(promise).rejects.toBeInstanceOf(UsageError);
+    await expect(promise).rejects.toThrow('Unknown config key "foo"');
+    stdout.restore();
   });
 
   it("lists config values", async () => {
