@@ -1,6 +1,6 @@
 import { Command, InvalidArgumentError } from "commander";
 
-import { Person } from "../../api/generated/path/sdk.gen.js";
+import { Person, PersonActivity } from "../../api/generated/path/sdk.gen.js";
 import type { UpdatePersonReq } from "../../api/generated/path/types.gen.js";
 import type { PersonFilterParams } from "../../api/types.js";
 import { unwrap } from "../../api/unwrap.js";
@@ -65,6 +65,16 @@ function parseInteger(value: string, label: string): number {
 
 function parseId(value: string): number {
   return parseInteger(value, "id");
+}
+
+function parseNumericId(value: string, fieldName: string): number {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
+    throw new UsageError(`Invalid ${fieldName}: ${value}`);
+  }
+
+  return parsed;
 }
 
 function collectNumber(label: string): (value: string, previous: number[]) => number[] {
@@ -309,6 +319,72 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
 
       writeStdout(await response.text());
     });
+
+  personCommand
+    .command("merge-undo")
+    .description("Undo a person merge operation")
+    .argument("<mergeOperationId>", "merge operation ID", (v: string) =>
+      parseNumericId(v, "merge operation ID"),
+    )
+    .option("--confirm", "confirm the undo operation")
+    .action(async (mergeOperationId: number, options: ConfirmOptions, command: Command) => {
+      if (!options.confirm) {
+        throw new UsageError("Pass --confirm to undo this merge");
+      }
+
+      const formatter = resolveFormatter(command, dependencies);
+      await ensureAuth(command);
+      await Person.undoMergePerson({ path: { mergeOperationId } });
+      formatter.output({ undone: true, mergeOperationId }, toOutputContext());
+    });
+
+  const ACTIVITY_COLUMNS: ColumnDef[] = [
+    { header: "ID", key: "id" },
+    { header: "Action", key: "action" },
+    { header: "Actor", key: "actorName" },
+    { header: "Created At", key: "createdAt" },
+  ];
+
+  personCommand
+    .command("activity")
+    .description("View person activity history")
+    .argument("<personId>", "person ID", (v: string) => parseNumericId(v, "person ID"))
+    .option("--cursor <n>", "pagination cursor", (v: string) => parseInteger(v, "cursor"))
+    .option("--page-size <n>", "page size", (v: string) => parseInteger(v, "page-size"))
+    .action(
+      async (
+        personId: number,
+        options: { cursor?: number; pageSize?: number },
+        command: Command,
+      ) => {
+        const formatter = resolveFormatter(command, dependencies);
+        await ensureAuth(command);
+
+        const query: Record<string, number> = {};
+
+        if (options.cursor !== undefined) {
+          query.cursor = options.cursor;
+        }
+
+        if (options.pageSize !== undefined) {
+          query.pageSize = options.pageSize;
+        }
+
+        const { data } = await PersonActivity.getActivity({ path: { personId }, query });
+        const result = unwrap(data, "activity");
+
+        const rows = result.content.map((entry) => ({
+          ...entry,
+          actorName: entry.actor?.name ?? null,
+        }));
+
+        formatter.list(rows, ACTIVITY_COLUMNS, toOutputContext());
+
+        if (result.hasNext && result.nextCursor != null) {
+          process.stderr.write(`Next page: --cursor ${result.nextCursor}\n`);
+        }
+      },
+    );
 
   return personCommand;
 }

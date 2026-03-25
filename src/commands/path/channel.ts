@@ -42,7 +42,7 @@ interface DeleteChannelOptions {
 
 interface PeopleCommandOptions {
   keyword?: string;
-  pageNumber?: number;
+  page?: number;
   pageSize?: number;
 }
 
@@ -212,15 +212,15 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .description("List people in a channel")
     .argument("<channelId>", "channel id")
     .option("--keyword <keyword>", "filter by keyword")
-    .option("--page-number <pageNumber>", "page number", Number.parseInt)
-    .option("--page-size <pageSize>", "page size", Number.parseInt)
+    .option("--page <page>", "page number", (v: string) => parseNumericId(v, "page"))
+    .option("--page-size <pageSize>", "page size", (v: string) => parseNumericId(v, "page-size"))
     .action(async (rawChannelId: string, peopleOptions: PeopleCommandOptions, command: Command) => {
       const formatter = resolveFormatter(command, options);
       await ensureAuth(command);
       const channelId = parseNumericId(rawChannelId, "channel id");
       const filters = pickDefined<PersonFilterParams>({
         keyword: peopleOptions.keyword,
-        pageNumber: peopleOptions.pageNumber,
+        pageNumber: peopleOptions.page,
         pageSize: peopleOptions.pageSize,
       });
       const { data: result } = await Channel.listChannelPeople({

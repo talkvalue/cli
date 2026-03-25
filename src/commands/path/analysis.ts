@@ -1,0 +1,108 @@
+import { Command } from "commander";
+
+import { Analysis } from "../../api/generated/path/sdk.gen.js";
+import { UsageError } from "../../errors/index.js";
+import type { Formatter, OutputContext } from "../../output/index.js";
+import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+
+export interface AnalysisCommandDependencies {
+  formatter?: Formatter;
+}
+
+function parseNumericId(value: string, fieldName: string): number {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
+    throw new UsageError(`Invalid ${fieldName}: ${value}`);
+  }
+
+  return parsed;
+}
+
+function toOutputRecord(value: object): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(value));
+}
+
+function toOutputContext(): OutputContext {
+  return {};
+}
+
+function collectNumericValues(value: string, previous: number[]): number[] {
+  return [...previous, parseNumericId(value, "id")];
+}
+
+export function createAnalysisCommand(dependencies: AnalysisCommandDependencies = {}): Command {
+  const command = new Command("analysis").description("Analysis commands for channels and events");
+
+  const channelCommand = new Command("channel").description("Channel analysis commands");
+
+  channelCommand
+    .command("attribution")
+    .description("Analyze channel-event attribution")
+    .argument("<channelId>", "channel ID to analyze")
+    .requiredOption("--event-id <id>", "event ID (repeatable)", collectNumericValues, [])
+    .action(async (rawChannelId: string, options: { eventId: number[] }, command: Command) => {
+      if (options.eventId.length === 0) {
+        throw new UsageError("At least one --event-id is required");
+      }
+
+      const formatter = resolveFormatter(command, dependencies);
+      await ensureAuth(command);
+      const channelId = parseNumericId(rawChannelId, "channel ID");
+      const { data } = await Analysis.getChannelEventContribution({
+        path: { channelId },
+        query: { eventIds: options.eventId },
+      });
+      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+    });
+
+  channelCommand
+    .command("audience")
+    .description("Analyze channel audience overlap")
+    .requiredOption(
+      "--channel-id <id>",
+      "channel ID (repeatable, min 2, max 5)",
+      collectNumericValues,
+      [],
+    )
+    .action(async (options: { channelId: number[] }, command: Command) => {
+      if (options.channelId.length < 2 || options.channelId.length > 5) {
+        throw new UsageError("--channel-id requires between 2 and 5 channel IDs");
+      }
+
+      const formatter = resolveFormatter(command, dependencies);
+      await ensureAuth(command);
+      const { data } = await Analysis.getChannelOverlap({
+        query: { channelIds: options.channelId },
+      });
+      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+    });
+
+  command.addCommand(channelCommand);
+
+  const eventCommand = new Command("event").description("Event analysis commands");
+
+  eventCommand
+    .command("insights")
+    .description("Get event insight signals")
+    .action(async (_options: unknown, command: Command) => {
+      const formatter = resolveFormatter(command, dependencies);
+      await ensureAuth(command);
+      const { data } = await Analysis.getEventInsights();
+      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+    });
+
+  eventCommand
+    .command("trend")
+    .description("Get event participant registration trend")
+    .action(async (_options: unknown, command: Command) => {
+      const formatter = resolveFormatter(command, dependencies);
+      await ensureAuth(command);
+      const { data } = await Analysis.getEventParticipantTrend();
+      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+    });
+
+  command.addCommand(eventCommand);
+
+  return command;
+}

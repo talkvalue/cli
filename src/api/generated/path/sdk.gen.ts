@@ -40,6 +40,9 @@ import type {
 	ExportChannelPeopleCsvData,
 	ExportChannelPeopleCsvErrors,
 	ExportChannelPeopleCsvResponses,
+	ExportCompanyPeopleCsvData,
+	ExportCompanyPeopleCsvErrors,
+	ExportCompanyPeopleCsvResponses,
 	ExportEventPeopleCsvData,
 	ExportEventPeopleCsvErrors,
 	ExportEventPeopleCsvResponses,
@@ -100,6 +103,9 @@ import type {
 	MergePersonData,
 	MergePersonErrors,
 	MergePersonResponses,
+	UndoMergePersonData,
+	UndoMergePersonErrors,
+	UndoMergePersonResponses,
 	UpdateChannelData,
 	UpdateChannelErrors,
 	UpdateChannelResponses,
@@ -358,6 +364,25 @@ export class Company {
 			...options,
 		});
 	}
+
+	/**
+	 * Company의 Person CSV 내보내기
+	 *
+	 * Company에 속한 모든 Person을 CSV 파일로 내보냅니다.
+	 */
+	public static exportCompanyPeopleCsv<ThrowOnError extends boolean = false>(
+		options: Options<ExportCompanyPeopleCsvData, ThrowOnError>,
+	) {
+		return (options.client ?? client).get<
+			ExportCompanyPeopleCsvResponses,
+			ExportCompanyPeopleCsvErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/company/{companyId}/person/export",
+			...options,
+		});
+	}
 }
 
 export class Channel {
@@ -523,6 +548,25 @@ export class Person {
 		>({
 			security: [{ scheme: "bearer", type: "http" }],
 			url: "/path/person/{sourceId}/merge/{targetId}",
+			...options,
+		});
+	}
+
+	/**
+	 * Person 병합 취소
+	 *
+	 * 병합된 Person을 원래 상태로 분리합니다.
+	 */
+	public static undoMergePerson<ThrowOnError extends boolean = false>(
+		options: Options<UndoMergePersonData, ThrowOnError>,
+	) {
+		return (options.client ?? client).post<
+			UndoMergePersonResponses,
+			UndoMergePersonErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/person/merge/{mergeOperationId}/undo",
 			...options,
 		});
 	}

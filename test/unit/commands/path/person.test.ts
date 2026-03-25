@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Person } from "../../../../src/api/generated/path/sdk.gen.js";
+import { Person, PersonActivity } from "../../../../src/api/generated/path/sdk.gen.js";
 import type {
   PersonDetailRes,
   PersonPageRes,
@@ -29,6 +29,10 @@ vi.mock("../../../../src/api/generated/path/sdk.gen.js", () => ({
     deletePerson: vi.fn(),
     mergePerson: vi.fn(),
     exportPeopleCsv: vi.fn(),
+    undoMergePerson: vi.fn(),
+  },
+  PersonActivity: {
+    getActivity: vi.fn(),
   },
 }));
 
@@ -246,5 +250,51 @@ describe("createPersonCommand", () => {
     expect(harness.writeStdout).toHaveBeenCalledWith("id,name\n1,Alice\n");
     expect(harness.formatter.output).not.toHaveBeenCalled();
     expect(harness.formatter.list).not.toHaveBeenCalled();
+  });
+
+  it("merge-undo throws UsageError without --confirm", async () => {
+    const harness = createHarness();
+
+    await expect(harness.run(["merge-undo", "123"])).rejects.toBeInstanceOf(UsageError);
+    expect(Person.undoMergePerson).not.toHaveBeenCalled();
+  });
+
+  it("merge-undo calls undoMergePerson when confirmed", async () => {
+    const harness = createHarness();
+    vi.mocked(Person.undoMergePerson).mockResolvedValueOnce({ data: undefined } as any);
+
+    await harness.run(["merge-undo", "123", "--confirm"]);
+
+    expect(Person.undoMergePerson).toHaveBeenCalledWith({ path: { mergeOperationId: 123 } });
+    expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("activity calls getActivity with personId", async () => {
+    const harness = createHarness();
+    vi.mocked(PersonActivity.getActivity).mockResolvedValueOnce({
+      data: { content: [], hasNext: false },
+    } as any);
+
+    await harness.run(["activity", "456"]);
+
+    expect(PersonActivity.getActivity).toHaveBeenCalledWith({
+      path: { personId: 456 },
+      query: {},
+    });
+    expect(harness.formatter.list).toHaveBeenCalledTimes(1);
+  });
+
+  it("activity forwards cursor and page-size", async () => {
+    const harness = createHarness();
+    vi.mocked(PersonActivity.getActivity).mockResolvedValueOnce({
+      data: { content: [], hasNext: false },
+    } as any);
+
+    await harness.run(["activity", "456", "--cursor", "100", "--page-size", "10"]);
+
+    expect(PersonActivity.getActivity).toHaveBeenCalledWith({
+      path: { personId: 456 },
+      query: { cursor: 100, pageSize: 10 },
+    });
   });
 });

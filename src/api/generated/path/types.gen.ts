@@ -155,6 +155,28 @@ export type EmailDetailRes = {
 };
 
 /**
+ * 병합 작업 요약
+ */
+export type MergeOperationRes = {
+	/**
+	 * MergeOperation ID, undo api에 사용 가능
+	 */
+	id: number;
+	/**
+	 * 병합된 Source Person 이름
+	 */
+	sourcePersonName: string;
+	/**
+	 * 병합된 Source Person 대표 이메일
+	 */
+	sourcePrimaryEmail: string;
+	/**
+	 * 병합 일시
+	 */
+	mergedAt: string;
+};
+
+/**
  * Person 소속 채널
  */
 export type PersonChannelDetailRes = {
@@ -248,6 +270,10 @@ export type PersonDetailRes = {
 	 * 이벤트 목록
 	 */
 	events: Array<PersonEventDetailRes>;
+	/**
+	 * 취소 가능한 병합 목록
+	 */
+	mergeOperations: Array<MergeOperationRes>;
 	/**
 	 * 생성일시
 	 */
@@ -745,6 +771,7 @@ export type PersonChangeLogEntryRes = {
 		| "DELETED"
 		| "RESTORED"
 		| "MERGED"
+		| "UNMERGED"
 		| "SOURCE_CONNECTED"
 		| "SOURCE_DISCONNECTED";
 	/**
@@ -1524,6 +1551,36 @@ export type MergePersonResponses = {
 
 export type MergePersonResponse =
 	MergePersonResponses[keyof MergePersonResponses];
+
+export type UndoMergePersonData = {
+	body?: never;
+	path: {
+		/**
+		 * MergeOperation ID
+		 */
+		mergeOperationId: number;
+	};
+	query?: never;
+	url: "/path/person/merge/{mergeOperationId}/undo";
+};
+
+export type UndoMergePersonErrors = {
+	/**
+	 * MERGE_OPERATION_NOT_FOUND: error.merge_not_found
+	 */
+	404: unknown;
+	/**
+	 * MERGE_ALREADY_UNDONE: error.merge_already_undone
+	 */
+	409: unknown;
+};
+
+export type UndoMergePersonResponses = {
+	/**
+	 * OK
+	 */
+	200: unknown;
+};
 
 export type CreateIntegrationImportData = {
 	body: IntegrationImportReq;
@@ -2310,6 +2367,35 @@ export type ListCompanyPeopleResponses = {
 
 export type ListCompanyPeopleResponse =
 	ListCompanyPeopleResponses[keyof ListCompanyPeopleResponses];
+
+export type ExportCompanyPeopleCsvData = {
+	body?: never;
+	path: {
+		/**
+		 * Company ID
+		 */
+		companyId: number;
+	};
+	query?: never;
+	url: "/path/company/{companyId}/person/export";
+};
+
+export type ExportCompanyPeopleCsvErrors = {
+	/**
+	 * COMPANY_NOT_FOUND: error.company_not_found
+	 */
+	404: unknown;
+};
+
+export type ExportCompanyPeopleCsvResponses = {
+	/**
+	 * OK
+	 */
+	200: StreamingResponseBody;
+};
+
+export type ExportCompanyPeopleCsvResponse =
+	ExportCompanyPeopleCsvResponses[keyof ExportCompanyPeopleCsvResponses];
 
 export type ExportChannelPeopleCsvData = {
 	body?: never;

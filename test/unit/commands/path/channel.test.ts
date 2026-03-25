@@ -237,16 +237,7 @@ describe("createChannelCommand", () => {
     };
     vi.mocked(Channel.listChannelPeople).mockResolvedValueOnce({ data: people } as any);
 
-    await harness.run([
-      "people",
-      "9",
-      "--keyword",
-      "alice",
-      "--page-number",
-      "2",
-      "--page-size",
-      "30",
-    ]);
+    await harness.run(["people", "9", "--keyword", "alice", "--page", "2", "--page-size", "30"]);
 
     expect(Channel.listChannelPeople).toHaveBeenCalledWith({
       path: { channelId: 9 },
