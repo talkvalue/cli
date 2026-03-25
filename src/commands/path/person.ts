@@ -1,12 +1,19 @@
-import { Command, InvalidArgumentError } from "commander";
+import { Command } from "commander";
 
 import { Person, PersonActivity } from "../../api/generated/path/sdk.gen.js";
 import type { UpdatePersonReq } from "../../api/generated/path/types.gen.js";
 import type { PersonFilterParams } from "../../api/types.js";
 import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
-import type { ColumnDef, Formatter, OutputContext } from "../../output/index.js";
+import type { ColumnDef, Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+import {
+  collectNumber,
+  collectString,
+  parseInteger,
+  parseNumericId,
+  toOutputContext,
+} from "../../shared/utils.js";
 
 interface PersonCommandDependencies {
   formatter?: Formatter;
@@ -53,39 +60,7 @@ const PERSON_LIST_COLUMNS: ColumnDef[] = [
   { header: "Created At", key: "createdAt" },
 ];
 
-function parseInteger(value: string, label: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new InvalidArgumentError(`${label} must be a number`);
-  }
-
-  return parsed;
-}
-
-function parseId(value: string): number {
-  return parseInteger(value, "id");
-}
-
-function parseNumericId(value: string, fieldName: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${fieldName}: ${value}`);
-  }
-
-  return parsed;
-}
-
-function collectNumber(label: string): (value: string, previous: number[]) => number[] {
-  return (value: string, previous: number[]): number[] => {
-    return [...previous, parseInteger(value, label)];
-  };
-}
-
-function collectString(value: string, previous: string[]): string[] {
-  return [...previous, value];
-}
+const parseId = (v: string): number => parseNumericId(v, "id");
 
 function buildFilterParams(options: ListOptions): PersonFilterParams {
   const filters: PersonFilterParams = {};
@@ -177,12 +152,6 @@ function buildUpdatePayload(options: UpdateOptions): UpdatePersonReq {
   }
 
   return payload;
-}
-
-function toOutputContext(pagination?: OutputContext["pagination"]): OutputContext {
-  return {
-    pagination,
-  };
 }
 
 function ensureConfirmed(confirmed: boolean | undefined, action: string): void {
@@ -312,6 +281,10 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
     .command("export")
     .description("Export people as CSV")
     .action(async (_options: unknown, command: Command) => {
+      const globals = command.optsWithGlobals<{ format?: string; json?: boolean }>();
+      if (globals.format || globals.json) {
+        process.stderr.write("Warning: export commands always output CSV regardless of --format\n");
+      }
       await ensureAuth(command);
       const { response } = await Person.exportPeopleCsv({
         parseAs: "stream",

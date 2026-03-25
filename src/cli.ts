@@ -22,7 +22,7 @@ export function createProgram(): Command {
     .option("--no-color", "disable colored output")
     .addCommand(createAuthCommand())
     .addCommand(createPathCommand())
-    .addCommand(createConfigCommand())
+    .addCommand(createConfigCommand(), { hidden: true })
     .addCommand(createVersionCommand());
 }
 

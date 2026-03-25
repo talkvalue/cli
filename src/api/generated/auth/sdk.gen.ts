@@ -19,16 +19,7 @@ export type Options<
 	TData extends TDataShape = TDataShape,
 	ThrowOnError extends boolean = boolean,
 > = Options2<TData, ThrowOnError> & {
-	/**
-	 * You can provide a client instance returned by `createClient()` instead of
-	 * individual options. This might be also useful if you want to implement a
-	 * custom client.
-	 */
 	client?: Client;
-	/**
-	 * You can pass arbitrary values through the `meta` object. This can be
-	 * used to access values that aren't defined as part of the SDK function.
-	 */
 	meta?: Record<string, unknown>;
 };
 
@@ -53,11 +44,6 @@ export class WorkOsWebhookController {
 }
 
 export class Overview {
-	/**
-	 * 조직 개요 조회
-	 *
-	 * 조직 내 ACTIVE 멤버 수를 반환합니다.
-	 */
 	public static getOverview<ThrowOnError extends boolean = false>(
 		options?: Options<GetOverviewData, ThrowOnError>,
 	) {
@@ -74,11 +60,6 @@ export class Overview {
 }
 
 export class Organization {
-	/**
-	 * 내 조직 목록 조회
-	 *
-	 * 인증된 멤버가 속한 모든 조직을 반환합니다.
-	 */
 	public static getOrganizations<ThrowOnError extends boolean = false>(
 		options?: Options<GetOrganizationsData, ThrowOnError>,
 	) {

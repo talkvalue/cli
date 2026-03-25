@@ -1,35 +1,20 @@
 import { Command } from "commander";
 
 import { Analysis } from "../../api/generated/path/sdk.gen.js";
+import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
-import type { Formatter, OutputContext } from "../../output/index.js";
+import type { Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+import { parseNumericId, toOutputContext, toOutputRecord } from "../../shared/utils.js";
 
 export interface AnalysisCommandDependencies {
   formatter?: Formatter;
 }
 
-function parseNumericId(value: string, fieldName: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${fieldName}: ${value}`);
-  }
-
-  return parsed;
-}
-
-function toOutputRecord(value: object): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value));
-}
-
-function toOutputContext(): OutputContext {
-  return {};
-}
-
-function collectNumericValues(value: string, previous: number[]): number[] {
-  return [...previous, parseNumericId(value, "id")];
-}
+const collectNumericValues = (value: string, previous: number[]) => [
+  ...previous,
+  parseNumericId(value, "id"),
+];
 
 export function createAnalysisCommand(dependencies: AnalysisCommandDependencies = {}): Command {
   const command = new Command("analysis").description("Analysis commands for channels and events");
@@ -53,7 +38,7 @@ export function createAnalysisCommand(dependencies: AnalysisCommandDependencies 
         path: { channelId },
         query: { eventIds: options.eventId },
       });
-      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+      formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
     });
 
   channelCommand
@@ -75,7 +60,7 @@ export function createAnalysisCommand(dependencies: AnalysisCommandDependencies 
       const { data } = await Analysis.getChannelOverlap({
         query: { channelIds: options.channelId },
       });
-      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+      formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
     });
 
   command.addCommand(channelCommand);
@@ -89,7 +74,7 @@ export function createAnalysisCommand(dependencies: AnalysisCommandDependencies 
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
       const { data } = await Analysis.getEventInsights();
-      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+      formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
     });
 
   eventCommand
@@ -99,7 +84,7 @@ export function createAnalysisCommand(dependencies: AnalysisCommandDependencies 
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
       const { data } = await Analysis.getEventParticipantTrend();
-      formatter.output(toOutputRecord(data ?? {}), toOutputContext());
+      formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
     });
 
   command.addCommand(eventCommand);

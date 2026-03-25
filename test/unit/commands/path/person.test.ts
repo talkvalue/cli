@@ -284,6 +284,30 @@ describe("createPersonCommand", () => {
     expect(harness.formatter.list).toHaveBeenCalledTimes(1);
   });
 
+  it("activity formats entries with actorName", async () => {
+    const harness = createHarness();
+    vi.mocked(PersonActivity.getActivity).mockResolvedValueOnce({
+      data: {
+        content: [
+          {
+            id: 1,
+            action: "CREATED",
+            actor: { name: "Bob" },
+            createdAt: "2026-01-01T00:00:00.000Z",
+          },
+        ],
+        hasNext: false,
+      },
+    } as any);
+
+    await harness.run(["activity", "456"]);
+
+    expect(harness.formatter.list).toHaveBeenCalledTimes(1);
+    const rows = vi.mocked(harness.formatter.list).mock.calls[0][0];
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ actorName: "Bob" });
+  });
+
   it("activity forwards cursor and page-size", async () => {
     const harness = createHarness();
     vi.mocked(PersonActivity.getActivity).mockResolvedValueOnce({

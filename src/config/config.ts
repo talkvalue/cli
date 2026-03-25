@@ -103,19 +103,21 @@ export async function loadConfig(): Promise<Config> {
   const configFilePath = getConfigFilePath();
 
   try {
-    const fileContent = await readFile(configFilePath, "utf8");
-    const parsed = YAML.parse(fileContent);
-    return normalizeConfig(parsed);
-  } catch (error) {
-    const code = isRecord(error) ? error.code : undefined;
-
-    if (code === "ENOENT") {
-      const defaultConfig = { ...DEFAULT_CONFIG };
+    const raw = await readFile(configFilePath, "utf8");
+    const parsed = YAML.parse(raw);
+    return normalizeConfig(isRecord(parsed) ? parsed : {});
+  } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as NodeJS.ErrnoException).code === "ENOENT"
+    ) {
+      const defaultConfig = normalizeConfig({});
       await saveConfig(defaultConfig);
       return defaultConfig;
     }
-
-    throw error;
+    process.stderr.write("Warning: config file is corrupted, using defaults\n");
+    return normalizeConfig({});
   }
 }
 

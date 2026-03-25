@@ -12,7 +12,7 @@ const JSON_CONTENT_TYPE = "application/json";
 const FORM_URLENCODED = "application/x-www-form-urlencoded";
 const SLOW_DOWN_SECONDS = 5;
 
-export interface DeviceAuthorizationResponse {
+interface DeviceAuthorizationResponse {
   device_code: string;
   user_code: string;
   verification_uri: string;
@@ -39,13 +39,13 @@ interface OAuthErrorResponse {
   error_description?: string;
 }
 
-export interface RequestDeviceCodeParams {
+interface RequestDeviceCodeParams {
   apiBaseUrl?: string;
   clientId: string;
   scopes: readonly string[];
 }
 
-export interface PollForTokenParams {
+interface PollForTokenParams {
   apiBaseUrl?: string;
   clientId: string;
   deviceCode: string;
@@ -54,7 +54,7 @@ export interface PollForTokenParams {
   sleep?: (milliseconds: number) => Promise<void>;
 }
 
-export interface RefreshTokenParams {
+interface RefreshTokenParams {
   apiBaseUrl?: string;
   clientId: string;
   organizationId?: string;

@@ -6,8 +6,9 @@ import { BulkImport } from "../../api/generated/path/sdk.gen.js";
 import type { ColumnMappingReq, CreateImportReq } from "../../api/generated/path/types.gen.js";
 import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
-import type { ColumnDef, Formatter, OutputContext } from "../../output/index.js";
+import type { ColumnDef, Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+import { parseNumericId, toOutputContext, toOutputRecord } from "../../shared/utils.js";
 
 const IMPORT_JOB_COLUMNS: ColumnDef[] = [
   { header: "ID", key: "id" },
@@ -42,29 +43,23 @@ interface AnalyzeOptions {
   file?: string;
 }
 
-function parseNumericId(value: string, fieldName: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${fieldName}: ${value}`);
-  }
-
-  return parsed;
-}
-
-function toOutputRecord(value: object): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value));
-}
-
-function toOutputContext(pagination?: OutputContext["pagination"]): OutputContext {
-  return {
-    pagination,
-  };
-}
-
 function collectValues(value: string, previous: string[]): string[] {
   return [...previous, value];
 }
+
+const VALID_TARGET_FIELDS = [
+  "EMAIL",
+  "FIRST_NAME",
+  "LAST_NAME",
+  "NAME",
+  "PHONE",
+  "JOB_TITLE",
+  "COMPANY_NAME",
+  "ADDRESS",
+  "LINKEDIN_URL",
+  "X_URL",
+  "JOINED_AT",
+] as const;
 
 function parseMapping(raw: string): ColumnMappingReq {
   const parts = raw.split(":");
@@ -79,7 +74,14 @@ function parseMapping(raw: string): ColumnMappingReq {
     throw new UsageError(`Invalid csv index in mapping "${raw}"`);
   }
 
-  return { csvIndex, targetField: parts[1] as ColumnMappingReq["targetField"] };
+  const targetField = parts[1].toUpperCase();
+  if (!VALID_TARGET_FIELDS.includes(targetField as (typeof VALID_TARGET_FIELDS)[number])) {
+    throw new UsageError(
+      `Invalid target field "${parts[1]}". Valid: ${VALID_TARGET_FIELDS.join(", ")}`,
+    );
+  }
+
+  return { csvIndex, targetField: targetField as ColumnMappingReq["targetField"] };
 }
 
 export function createImportCommand(dependencies: ImportCommandDependencies = {}): Command {
@@ -146,6 +148,11 @@ export function createImportCommand(dependencies: ImportCommandDependencies = {}
         throw new UsageError("Creating an import requires --mode");
       }
 
+      const validModes = ["UPDATE", "SKIP"] as const;
+      if (!validModes.includes(createOptions.mode as (typeof validModes)[number])) {
+        throw new UsageError(`--mode must be one of: ${validModes.join(", ")}`);
+      }
+
       if (createOptions.mapping.length === 0) {
         throw new UsageError("Creating an import requires at least one --mapping");
       }
@@ -178,7 +185,12 @@ export function createImportCommand(dependencies: ImportCommandDependencies = {}
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
 
-      const fileBuffer = readFileSync(analyzeOptions.file);
+      let fileBuffer: Buffer;
+      try {
+        fileBuffer = readFileSync(analyzeOptions.file);
+      } catch {
+        throw new UsageError(`Cannot read file: ${analyzeOptions.file}`);
+      }
       const blob = new Blob([fileBuffer], { type: "text/csv" });
 
       const { data: result } = await BulkImport.analyzeImport({
@@ -191,8 +203,12 @@ export function createImportCommand(dependencies: ImportCommandDependencies = {}
     .command("failed-export")
     .description("Export failed rows as CSV")
     .argument("<id>", "import job id")
-    .action(async (rawId: string) => {
-      await ensureAuth(command);
+    .action(async (rawId: string, _opts: unknown, cmd: Command) => {
+      const globals = cmd.optsWithGlobals<{ format?: string; json?: boolean }>();
+      if (globals.format || globals.json) {
+        process.stderr.write("Warning: export commands always output CSV regardless of --format\n");
+      }
+      await ensureAuth(cmd);
       const id = parseNumericId(rawId, "import job id");
       const { response } = await BulkImport.exportFailedRowsCsv({
         path: { id },

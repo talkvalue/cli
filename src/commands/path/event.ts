@@ -8,8 +8,16 @@ import type {
 } from "../../api/generated/path/types.gen.js";
 import { unwrap } from "../../api/unwrap.js";
 import { NotFoundError, UsageError } from "../../errors/index.js";
-import type { ColumnDef, Formatter, OutputContext } from "../../output/index.js";
+import type { ColumnDef, Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+import {
+  collectNumber,
+  collectString,
+  parseNumericId,
+  pickDefined,
+  toOutputContext,
+  toOutputRecord,
+} from "../../shared/utils.js";
 
 export interface EventCommandDependencies {
   formatter?: Formatter;
@@ -81,45 +89,6 @@ const PERSON_LIST_COLUMNS: ColumnDef[] = [
   { header: "Created At", key: "createdAt" },
 ];
 
-function toOutputRecord(value: object): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value));
-}
-
-function toOutputContext(pagination?: OutputContext["pagination"]): OutputContext {
-  return {
-    pagination,
-  };
-}
-
-function parseNumericId(value: string, fieldName: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${fieldName}: ${value}`);
-  }
-
-  return parsed;
-}
-
-function collectNumber(label: string): (value: string, previous: number[]) => number[] {
-  return (value: string, previous: number[]): number[] => {
-    const parsed = Number.parseInt(value, 10);
-    if (Number.isNaN(parsed)) {
-      throw new UsageError(`Invalid ${label}: ${value}`);
-    }
-    return [...previous, parsed];
-  };
-}
-
-function collectString(value: string, previous: string[]): string[] {
-  return [...previous, value];
-}
-
-function pickDefined<TValue extends object>(value: TValue): Partial<TValue> {
-  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined);
-  return Object.fromEntries(entries) as Partial<TValue>;
-}
-
 export function createEventCommand(dependencies: EventCommandDependencies = {}): Command {
   const writeStdout = dependencies.writeStdout ?? ((text: string) => process.stdout.write(text));
   const command = new Command("event").description("Manage events in Path");
@@ -131,7 +100,8 @@ export function createEventCommand(dependencies: EventCommandDependencies = {}):
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
       const { data } = await Event_.listEvents();
-      formatter.list((data ?? []).map(toOutputRecord), EVENT_LIST_COLUMNS, toOutputContext());
+      const events = unwrap(data, "events");
+      formatter.list(events.map(toOutputRecord), EVENT_LIST_COLUMNS, toOutputContext());
     });
 
   command
@@ -142,8 +112,9 @@ export function createEventCommand(dependencies: EventCommandDependencies = {}):
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
       const id = parseNumericId(rawId, "event id");
-      const { data: events } = await Event_.listEvents();
-      const found = (events ?? []).find((e) => e.id === id);
+      const { data } = await Event_.listEvents();
+      const events = unwrap(data, "events");
+      const found = events.find((e) => e.id === id);
       if (!found) {
         throw new NotFoundError(`Event ${id} not found`);
       }
@@ -193,28 +164,26 @@ export function createEventCommand(dependencies: EventCommandDependencies = {}):
     .option("--end-at <endAt>", "end date/time")
     .option("--location <location>", "event location")
     .action(async (rawId: string, updateOptions: UpdateEventOptions, command: Command) => {
-      if (updateOptions.name === undefined) {
-        throw new UsageError("Updating an event requires --name");
-      }
-      if (updateOptions.startAt === undefined) {
-        throw new UsageError("Updating an event requires --start-at");
-      }
-      if (updateOptions.timeZone === undefined) {
-        throw new UsageError("Updating an event requires --time-zone");
+      const payload = pickDefined({
+        name: updateOptions.name,
+        startAt: updateOptions.startAt,
+        timeZone: updateOptions.timeZone,
+        endAt: updateOptions.endAt,
+        location: updateOptions.location,
+      });
+
+      if (Object.keys(payload).length === 0) {
+        throw new UsageError("At least one field must be specified for update");
       }
 
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
       const id = parseNumericId(rawId, "event id");
 
-      const payload: UpdateEventReq = {
-        name: updateOptions.name,
-        startAt: updateOptions.startAt,
-        timeZone: updateOptions.timeZone,
-        ...(updateOptions.endAt !== undefined ? { endAt: updateOptions.endAt } : {}),
-        ...(updateOptions.location !== undefined ? { location: updateOptions.location } : {}),
-      };
-      const { data: event } = await Event_.updateEvent({ path: { id }, body: payload });
+      const { data: event } = await Event_.updateEvent({
+        path: { id },
+        body: payload as UpdateEventReq,
+      });
       formatter.output(toOutputRecord(unwrap(event, "event")), toOutputContext());
     });
 
@@ -338,8 +307,12 @@ export function createEventCommand(dependencies: EventCommandDependencies = {}):
     .command("export")
     .description("Export event people as CSV")
     .argument("<eventId>", "event id")
-    .action(async (rawEventId: string) => {
-      await ensureAuth(command);
+    .action(async (rawEventId: string, _opts: unknown, cmd: Command) => {
+      const globals = cmd.optsWithGlobals<{ format?: string; json?: boolean }>();
+      if (globals.format || globals.json) {
+        process.stderr.write("Warning: export commands always output CSV regardless of --format\n");
+      }
+      await ensureAuth(cmd);
       const eventId = parseNumericId(rawEventId, "event id");
       const { response } = await Event_.exportEventPeopleCsv({
         path: { eventId },

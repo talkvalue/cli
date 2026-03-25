@@ -9,8 +9,14 @@ import type {
 import type { PersonFilterParams } from "../../api/types.js";
 import { unwrap } from "../../api/unwrap.js";
 import { UsageError } from "../../errors/index.js";
-import type { Formatter, OutputContext } from "../../output/index.js";
+import type { Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+import {
+  parseNumericId,
+  pickDefined,
+  toOutputContext,
+  toOutputRecord,
+} from "../../shared/utils.js";
 
 const CHANNEL_COLUMNS = [
   { header: "ID", key: "id" },
@@ -72,33 +78,8 @@ interface AddPersonCommandOptions {
   xUrl?: string;
 }
 
-function parseNumericId(value: string, fieldName: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${fieldName}: ${value}`);
-  }
-
-  return parsed;
-}
-
-function toOutputRecord(value: object): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value));
-}
-
-function toOutputContext(pagination?: OutputContext["pagination"]): OutputContext {
-  return {
-    pagination,
-  };
-}
-
 function collectValues(value: string, previous: string[]): string[] {
   return [...previous, value];
-}
-
-function pickDefined<TValue extends object>(value: TValue): Partial<TValue> {
-  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined);
-  return Object.fromEntries(entries) as Partial<TValue>;
 }
 
 export function createChannelCommand(options: CreateChannelCommandOptions = {}): Command {
@@ -112,9 +93,10 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .action(async (_actionOptions: unknown, command: Command) => {
       const formatter = resolveFormatter(command, options);
       await ensureAuth(command);
-      const { data: channels } = await Channel.listChannels();
+      const { data } = await Channel.listChannels();
+      const channels = unwrap(data, "channels");
       formatter.list(
-        (channels ?? []).map((channel) => toOutputRecord(channel)),
+        channels.map((channel) => toOutputRecord(channel)),
         CHANNEL_COLUMNS,
         toOutputContext(),
       );
@@ -129,8 +111,9 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
       await ensureAuth(command);
       const id = parseNumericId(rawId, "channel id");
       // No getChannel endpoint in SDK; filter from listChannels
-      const { data: channel } = await Channel.listChannels();
-      const found = (channel ?? []).find((c) => c.id === id);
+      const { data } = await Channel.listChannels();
+      const channels = unwrap(data, "channels");
+      const found = channels.find((c) => c.id === id);
       if (!found) {
         throw new UsageError(`Channel ${id} not found`);
       }
@@ -168,19 +151,23 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .option("--icon <icon>", "channel icon")
     .option("--color <color>", "channel color")
     .action(async (rawId: string, updateOptions: UpdateChannelOptions, command: Command) => {
-      if (updateOptions.name === undefined) {
-        throw new UsageError("Updating a channel requires --name");
+      const payload = pickDefined({
+        name: updateOptions.name,
+        icon: updateOptions.icon,
+        color: updateOptions.color,
+      });
+
+      if (Object.keys(payload).length === 0) {
+        throw new UsageError("At least one field must be specified for update");
       }
 
       const formatter = resolveFormatter(command, options);
       await ensureAuth(command);
       const id = parseNumericId(rawId, "channel id");
-      const payload = pickDefined({
-        color: updateOptions.color,
-        icon: updateOptions.icon,
-        name: updateOptions.name,
-      }) as UpdateChannelReq;
-      const { data: channel } = await Channel.updateChannel({ path: { id }, body: payload });
+      const { data: channel } = await Channel.updateChannel({
+        path: { id },
+        body: payload as UpdateChannelReq,
+      });
       formatter.output(toOutputRecord(unwrap(channel, "channel")), toOutputContext());
     });
 
@@ -303,8 +290,12 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .command("export")
     .description("Export people in a channel as CSV")
     .argument("<channelId>", "channel id")
-    .action(async (rawChannelId: string) => {
-      await ensureAuth(command);
+    .action(async (rawChannelId: string, _opts: unknown, cmd: Command) => {
+      const globals = cmd.optsWithGlobals<{ format?: string; json?: boolean }>();
+      if (globals.format || globals.json) {
+        process.stderr.write("Warning: export commands always output CSV regardless of --format\n");
+      }
+      await ensureAuth(cmd);
       const channelId = parseNumericId(rawChannelId, "channel id");
       const { response } = await Channel.exportChannelPeopleCsv({
         path: { channelId },

@@ -54,8 +54,8 @@ function setAtPath(source: Config, path: string, value: string): void {
 }
 
 async function outputConfigValue(key: string, command: Command): Promise<void> {
-  const globals = command.optsWithGlobals<{ format?: string }>();
-  const formatter = createFormatter(detectFormat(globals.format));
+  const globals = command.optsWithGlobals<{ format?: string; json?: boolean }>();
+  const formatter = createFormatter(detectFormat(globals.json ? "json" : globals.format));
   const config = await loadConfig();
   const value = getAtPath(config, key);
 
@@ -84,8 +84,8 @@ function validateConfigKey(key: string): void {
 async function setConfigValue(key: string, value: string, command: Command): Promise<void> {
   validateConfigKey(key);
 
-  const globals = command.optsWithGlobals<{ format?: string }>();
-  const formatter = createFormatter(detectFormat(globals.format));
+  const globals = command.optsWithGlobals<{ format?: string; json?: boolean }>();
+  const formatter = createFormatter(detectFormat(globals.json ? "json" : globals.format));
   const config = await loadConfig();
 
   setAtPath(config, key, value);
@@ -95,8 +95,8 @@ async function setConfigValue(key: string, value: string, command: Command): Pro
 }
 
 async function listConfig(command: Command): Promise<void> {
-  const globals = command.optsWithGlobals<{ format?: string }>();
-  const formatter = createFormatter(detectFormat(globals.format));
+  const globals = command.optsWithGlobals<{ format?: string; json?: boolean }>();
+  const formatter = createFormatter(detectFormat(globals.json ? "json" : globals.format));
   const config = await loadConfig();
 
   formatter.output({ ...config }, createOutputContext());

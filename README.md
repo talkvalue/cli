@@ -20,7 +20,7 @@ talkvalue auth list                # list profiles
 talkvalue auth logout              # remove profile
 ```
 
-For CI, set `TALKVALUE_TOKEN`:
+For CI/agents, set `TALKVALUE_TOKEN`:
 
 ```bash
 TALKVALUE_TOKEN="eyJ..." talkvalue path person list
@@ -29,14 +29,14 @@ TALKVALUE_TOKEN="eyJ..." talkvalue path person list
 ## Commands
 
 ```bash
-talkvalue path overview                                    # dashboard summary
+talkvalue path overview                                    # dashboard
 talkvalue path overview stats                              # detailed stats
 
 # People
 talkvalue path person list                                 # list people
 talkvalue path person list --event-id 16 --sort joinedAt:desc
 talkvalue path person get <id>
-talkvalue path person update <id> --name "…"
+talkvalue path person update <id> --first-name "…" --last-name "…"
 talkvalue path person delete <id> --confirm
 talkvalue path person merge <sourceId> <targetId> --confirm
 talkvalue path person merge-undo <mergeOperationId> --confirm
@@ -47,7 +47,7 @@ talkvalue path person export                               # CSV export
 talkvalue path event list
 talkvalue path event get <id>
 talkvalue path event create --name "…" --start-at "…" --time-zone "…"
-talkvalue path event update <id> --name "…" --start-at "…" --time-zone "…"
+talkvalue path event update <id> --name "…"
 talkvalue path event delete <id> --confirm
 talkvalue path event person list <eventId>
 talkvalue path event person add <eventId> --email "…"
@@ -56,7 +56,8 @@ talkvalue path event person export <eventId>
 # Channels
 talkvalue path channel list
 talkvalue path channel create --name "…"
-talkvalue path channel update <id> --name "…"
+talkvalue path channel get <id>
+talkvalue path channel update <id> --name "…" --icon "…" --color "…"
 talkvalue path channel delete <id> --confirm
 talkvalue path channel people <channelId>
 talkvalue path channel add-person <channelId> --email "…"
@@ -82,9 +83,6 @@ talkvalue path import create --file-key "…" --source-id <n> --mode UPDATE --ma
 talkvalue path import analyze --file ./data.csv
 talkvalue path import failed-export <id>
 
-# Config
-talkvalue config list
-talkvalue config set <key> <value>
 talkvalue version
 ```
 

@@ -1,4 +1,4 @@
-export interface RetryOptions {
+interface RetryOptions {
   maxAttempts?: number;
   baseDelayMs?: number;
   maxRetryAfterMs?: number;
@@ -23,6 +23,9 @@ export async function withRetry(
   options?: RetryOptions,
 ): Promise<Response> {
   const maxAttempts = options?.maxAttempts ?? 3;
+  if (maxAttempts < 1) {
+    return fn();
+  }
   const baseDelayMs = options?.baseDelayMs ?? 1000;
   const maxRetryAfterMs = options?.maxRetryAfterMs ?? 60_000;
 

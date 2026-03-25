@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { Command } from "commander";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -6,6 +8,10 @@ import { createImportCommand } from "../../../../src/commands/path/import.js";
 import { UsageError } from "../../../../src/errors/index.js";
 import type { Formatter, OutputContext } from "../../../../src/output/index.js";
 import * as sharedModule from "../../../../src/shared/context.js";
+
+vi.mock("node:fs", () => ({
+  readFileSync: vi.fn(),
+}));
 
 vi.mock("../../../../src/shared/context.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../../../src/shared/context.js")>();
@@ -206,6 +212,35 @@ describe("createImportCommand", () => {
       },
     });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("analyze calls analyzeImport with file blob", async () => {
+    const harness = createHarness();
+    const csvBuffer = Buffer.from("email,name\nalice@example.com,Alice\n");
+    vi.mocked(readFileSync).mockReturnValueOnce(csvBuffer);
+    vi.mocked(BulkImport.analyzeImport).mockResolvedValueOnce({
+      data: {
+        fileKey: "key-123",
+        headers: ["email", "name"],
+        rowCount: 1,
+        sampleRows: [["alice@example.com", "Alice"]],
+      },
+    } as any);
+
+    await harness.run(["analyze", "--file", "./contacts.csv"]);
+
+    expect(readFileSync).toHaveBeenCalledWith("./contacts.csv");
+    expect(BulkImport.analyzeImport).toHaveBeenCalledWith({
+      body: { file: expect.any(Blob) },
+    });
+    expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("analyze throws UsageError when --file missing", async () => {
+    const harness = createHarness();
+
+    await expect(harness.run(["analyze"])).rejects.toBeInstanceOf(UsageError);
+    expect(BulkImport.analyzeImport).not.toHaveBeenCalled();
   });
 
   it("failed-export writes CSV to stdout", async () => {

@@ -6,8 +6,8 @@ export function createVersionCommand(): Command {
   return new Command("version")
     .description("Show version information")
     .action(async (_options: unknown, command: Command) => {
-      const globals = command.optsWithGlobals<{ format?: string }>();
-      const formatter = createFormatter(detectFormat(globals.format));
+      const globals = command.optsWithGlobals<{ format?: string; json?: boolean }>();
+      const formatter = createFormatter(detectFormat(globals.json ? "json" : globals.format));
       const root = command.parent ?? command;
       const version = root.version() ?? "unknown";
 

@@ -41,19 +41,25 @@ export function configureClients(options: {
             refreshPromise = undefined;
           });
         }
-        const refreshed = await refreshPromise;
-        if (refreshed && authFn) {
-          const newToken = await authFn();
-          if (newToken) {
-            const retryRequest = new Request(request, {
-              headers: new Headers(request.headers),
-            });
-            retryRequest.headers.set("Authorization", `Bearer ${newToken}`);
-            // Body stream is consumed after first fetch — retry safe for GET only
-            return withRetry(() =>
-              fetch(retryRequest, { signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) }),
-            );
+        try {
+          const refreshed = await refreshPromise;
+          if (refreshed && authFn) {
+            if (request.method !== "GET") {
+              return response; // Body stream consumed — cannot retry non-GET safely
+            }
+            const newToken = await authFn();
+            if (newToken) {
+              const retryRequest = new Request(request, {
+                headers: new Headers(request.headers),
+              });
+              retryRequest.headers.set("Authorization", `Bearer ${newToken}`);
+              return withRetry(() =>
+                fetch(retryRequest, { signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) }),
+              );
+            }
           }
+        } catch {
+          return response; // Refresh failed — return original 401
         }
       }
 

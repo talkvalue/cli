@@ -268,6 +268,36 @@ describe("createEventCommand", () => {
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
+  it("update with only --name sends partial payload", async () => {
+    const harness = createHarness();
+    vi.mocked(Event_.updateEvent).mockResolvedValueOnce({
+      data: {
+        createdAt: "2026-01-01T00:00:00.000Z",
+        id: 5,
+        location: null,
+        name: "New",
+        peopleCount: 50,
+        startAt: "2026-08-01T10:00:00.000Z",
+        timeZone: "Asia/Seoul",
+      },
+    } as any);
+
+    await harness.run(["update", "5", "--name", "New"]);
+
+    expect(Event_.updateEvent).toHaveBeenCalledWith({
+      path: { id: 5 },
+      body: { name: "New" },
+    });
+    expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("update without any fields throws UsageError", async () => {
+    const harness = createHarness();
+
+    await expect(harness.run(["update", "5"])).rejects.toBeInstanceOf(UsageError);
+    expect(Event_.updateEvent).not.toHaveBeenCalled();
+  });
+
   it("throws UsageError when delete --confirm is missing", async () => {
     const harness = createHarness();
 

@@ -4,147 +4,48 @@ export type ClientOptions = {
 	baseUrl: "http://localhost:8080" | (string & {});
 };
 
-/**
- * 이벤트 수정 요청
- */
 export type UpdateEventReq = {
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 타임존
-	 */
 	timeZone: string;
-	/**
-	 * 시작일시
-	 */
 	startAt: string;
-	/**
-	 * 종료일시
-	 */
 	endAt?: string;
-	/**
-	 * 장소
-	 */
 	location?: string;
 };
 
-/**
- * 이벤트 응답
- */
 export type EventRes = {
-	/**
-	 * 이벤트 ID
-	 */
 	id: number;
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 타임존
-	 */
 	timeZone: string;
-	/**
-	 * 시작일시
-	 */
 	startAt: string;
-	/**
-	 * 종료일시
-	 */
 	endAt?: string;
-	/**
-	 * 장소
-	 */
 	location?: string;
-	/**
-	 * 연결된 인원 수
-	 */
 	peopleCount: number;
-	/**
-	 * 생성일시
-	 */
 	createdAt: string;
 };
 
-/**
- * Company 수정 요청
- */
 export type UpdateCompanyReq = {
-	/**
-	 * 표시 이름
-	 */
 	displayName: string;
 };
 
-/**
- * Company 응답
- */
 export type CompanyRes = {
-	/**
-	 * Company ID
-	 */
 	id: number;
-	/**
-	 * 도메인
-	 */
 	domain: string;
-	/**
-	 * 표시 이름
-	 */
 	displayName: string;
-	/**
-	 * 소속 인원 수
-	 */
 	peopleCount?: number;
 };
 
-/**
- * 채널 수정 요청
- */
 export type UpdateChannelReq = {
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘 (이모지)
-	 */
 	icon?: string;
-	/**
-	 * 채널 색상 (HEX)
-	 */
 	color?: string;
 };
 
-/**
- * 채널 응답
- */
 export type ChannelRes = {
-	/**
-	 * 채널 ID
-	 */
 	id: number;
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘 (이모지)
-	 */
 	icon?: string;
-	/**
-	 * 채널 색상 (HEX)
-	 */
 	color?: string;
-	/**
-	 * 연결된 인원 수
-	 */
 	peopleCount: number;
-	/**
-	 * 생성일시
-	 */
 	createdAt: string;
 };
 
@@ -154,169 +55,52 @@ export type EmailDetailRes = {
 	domain?: string;
 };
 
-/**
- * 병합 작업 요약
- */
 export type MergeOperationRes = {
-	/**
-	 * MergeOperation ID, undo api에 사용 가능
-	 */
 	id: number;
-	/**
-	 * 병합된 Source Person 이름
-	 */
 	sourcePersonName: string;
-	/**
-	 * 병합된 Source Person 대표 이메일
-	 */
 	sourcePrimaryEmail: string;
-	/**
-	 * 병합 일시
-	 */
 	mergedAt: string;
 };
 
-/**
- * Person 소속 채널
- */
 export type PersonChannelDetailRes = {
-	/**
-	 * 채널 ID
-	 */
 	id: number;
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘
-	 */
 	icon?: string;
-	/**
-	 * 채널 색상 (HEX)
-	 */
 	color?: string;
-	/**
-	 * 채널 참여일시
-	 */
 	joinedAt?: string;
 };
 
-/**
- * Person 상세 응답
- */
 export type PersonDetailRes = {
-	/**
-	 * Person ID
-	 */
 	id: number;
-	/**
-	 * 이름 (풀네임)
-	 */
 	name: string;
-	/**
-	 * 이름 (First)
-	 */
 	firstName?: string;
-	/**
-	 * 성 (Last)
-	 */
 	lastName?: string;
-	/**
-	 * 대표 이메일
-	 */
 	primaryEmail: EmailDetailRes;
-	/**
-	 * 이메일 목록
-	 */
 	emails: Array<EmailDetailRes>;
-	/**
-	 * 대표 전화번호
-	 */
 	primaryPhone?: string;
-	/**
-	 * 전화번호 목록
-	 */
 	phones: Array<string>;
-	/**
-	 * 회사
-	 */
 	company?: CompanyRes;
-	/**
-	 * 직책
-	 */
 	jobTitle?: string;
-	/**
-	 * 주소
-	 */
 	address?: string;
-	/**
-	 * 프로필 이미지 URL
-	 */
 	avatarUrl?: string;
-	/**
-	 * LinkedIn URL
-	 */
 	linkedInUrl?: string;
-	/**
-	 * X(Twitter) URL
-	 */
 	xUrl?: string;
-	/**
-	 * 채널 목록
-	 */
 	channels: Array<PersonChannelDetailRes>;
-	/**
-	 * 이벤트 목록
-	 */
 	events: Array<PersonEventDetailRes>;
-	/**
-	 * 취소 가능한 병합 목록
-	 */
 	mergeOperations: Array<MergeOperationRes>;
-	/**
-	 * 생성일시
-	 */
 	createdAt: string;
 };
 
-/**
- * Person 소속 이벤트
- */
 export type PersonEventDetailRes = {
-	/**
-	 * 이벤트 ID
-	 */
 	id: number;
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 시작일시
-	 */
 	startAt: string;
-	/**
-	 * 장소
-	 */
 	location?: string;
-	/**
-	 * 참여일시
-	 */
 	joinedAt?: string;
 };
 
-/**
- * Integration Import 요청
- */
 export type IntegrationImportReq = {
-	/**
-	 * Import할 외부 이벤트 ID
-	 */
 	externalEventId: string;
-	/**
-	 * Import 모드 (UPDATE: 기존 데이터 갱신, SKIP: 기존 데이터 유지)
-	 */
 	mode: "UPDATE" | "SKIP";
 };
 
@@ -408,325 +192,100 @@ export type SuggestionRes = {
 	confidence: number;
 };
 
-/**
- * 이벤트 생성 요청
- */
 export type CreateEventReq = {
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 타임존
-	 */
 	timeZone: string;
-	/**
-	 * 시작일시
-	 */
 	startAt: string;
-	/**
-	 * 종료일시
-	 */
 	endAt?: string;
-	/**
-	 * 장소
-	 */
 	location?: string;
 };
 
-/**
- * Person 생성 요청
- */
 export type CreatePersonReq = {
-	/**
-	 * 이메일
-	 */
 	email: string;
-	/**
-	 * 이름 (First Name)
-	 */
 	firstName?: string;
-	/**
-	 * 성 (Last Name)
-	 */
 	lastName?: string;
-	/**
-	 * 전화번호 목록
-	 */
 	phones: Array<string>;
-	/**
-	 * 직책
-	 */
 	jobTitle?: string;
-	/**
-	 * 주소
-	 */
 	address?: string;
-	/**
-	 * 프로필 이미지 URL
-	 */
 	avatarUrl?: string;
-	/**
-	 * LinkedIn URL
-	 */
 	linkedInUrl?: string;
-	/**
-	 * X(Twitter) URL
-	 */
 	xUrl?: string;
-	/**
-	 * 회사명
-	 */
 	companyName?: string;
-	/**
-	 * 채널/이벤트 가입 시점 (미입력 시 현재 시점)
-	 */
 	joinedAt?: string;
 };
 
-/**
- * 채널 생성 요청
- */
 export type CreateChannelReq = {
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘 (이모지)
-	 */
 	icon?: string;
-	/**
-	 * 채널 색상 (HEX)
-	 */
 	color?: string;
 };
 
-/**
- * Person 수정 요청
- */
 export type UpdatePersonReq = {
-	/**
-	 * 이름 (First Name)
-	 */
 	firstName?: string;
-	/**
-	 * 성 (Last Name)
-	 */
 	lastName?: string;
-	/**
-	 * 대표 이메일
-	 */
 	primaryEmail?: string;
-	/**
-	 * 추가 이메일 목록
-	 */
 	emails?: Array<string>;
-	/**
-	 * 대표 전화번호
-	 */
 	primaryPhone?: string;
-	/**
-	 * 추가 전화번호 목록
-	 */
 	phones?: Array<string>;
-	/**
-	 * 직책
-	 */
 	jobTitle?: string;
-	/**
-	 * 주소
-	 */
 	address?: string;
-	/**
-	 * 프로필 이미지 URL
-	 */
 	avatarUrl?: string;
-	/**
-	 * LinkedIn URL
-	 */
 	linkedInUrl?: string;
-	/**
-	 * X(Twitter) URL
-	 */
 	xUrl?: string;
-	/**
-	 * 회사명
-	 */
 	companyName?: string;
 };
 
-/**
- * Person 소속 채널
- */
 export type PersonChannelRes = {
-	/**
-	 * 채널 ID
-	 */
 	id: number;
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘
-	 */
 	icon?: string;
-	/**
-	 * 채널 참여일시
-	 */
 	joinedAt?: string;
 };
 
-/**
- * Person 소속 이벤트
- */
 export type PersonEventRes = {
-	/**
-	 * 이벤트 ID
-	 */
 	id: number;
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 참여일시
-	 */
 	joinedAt?: string;
 };
 
-/**
- * Person 페이지 응답
- */
 export type PersonPageRes = {
-	/**
-	 * Person 목록
-	 */
 	content: Array<PersonRes>;
-	/**
-	 * 전체 요소 수
-	 */
 	totalElements: number;
-	/**
-	 * 전체 페이지 수
-	 */
 	totalPages: number;
-	/**
-	 * 현재 페이지 번호 (0부터 시작)
-	 */
 	pageNumber: number;
-	/**
-	 * 페이지 크기
-	 */
 	pageSize: number;
 };
 
-/**
- * Person 목록 응답
- */
 export type PersonRes = {
-	/**
-	 * Person ID
-	 */
 	id: number;
-	/**
-	 * 이름 (풀네임)
-	 */
 	name: string;
-	/**
-	 * 대표 이메일
-	 */
 	primaryEmail: string;
-	/**
-	 * 대표 전화번호
-	 */
 	primaryPhone?: string;
-	/**
-	 * 회사
-	 */
 	company?: CompanyRes;
-	/**
-	 * 직책
-	 */
 	jobTitle?: string;
-	/**
-	 * 소속 채널 목록
-	 */
 	channels: Array<PersonChannelRes>;
-	/**
-	 * 소속 이벤트 목록
-	 */
 	events: Array<PersonEventRes>;
-	/**
-	 * 현재 조회 소스(채널/이벤트)에 참여한 일시. 소스 컨텍스트 없이 조회 시 null
-	 */
 	joinedAt?: string;
-	/**
-	 * 생성일시
-	 */
 	createdAt: string;
 };
 
-/**
- * 변경자 정보
- */
 export type ChangeLogMemberRes = {
-	/**
-	 * 멤버 ID
-	 */
 	id: number;
-	/**
-	 * 멤버 이름
-	 */
 	name: string;
-	/**
-	 * 멤버 이메일
-	 */
 	email: string;
 };
 
-/**
- * 소스 정보
- */
 export type ChangeLogSourceRes = {
-	/**
-	 * 소스 ID
-	 */
 	id: number;
-	/**
-	 * 소스 유형
-	 */
 	type: "CHANNEL" | "EVENT";
-	/**
-	 * 소스 이름
-	 */
 	name: string;
-	/**
-	 * 소스 아이콘 (이모지)
-	 */
 	icon?: string;
-	/**
-	 * 소스 색상 (Channel인 경우)
-	 */
 	color?: string;
 };
 
-/**
- * 필드 변경 내역
- */
 export type FieldChangeRes = {
-	/**
-	 * 변경된 필드명
-	 */
 	field: string;
-	/**
-	 * 변경 전 값
-	 */
 	before?: string;
-	/**
-	 * 변경 후 값
-	 */
 	after?: string;
 };
 
@@ -736,35 +295,14 @@ export type MergedFromInfo = {
 	primaryEmail: string;
 };
 
-/**
- * Person 활동 이력 커서 기반 응답
- */
 export type PersonActivityRes = {
-	/**
-	 * 활동 이력 목록
-	 */
 	content: Array<PersonChangeLogEntryRes>;
-	/**
-	 * 다음 페이지 커서 (마지막 페이지이면 null)
-	 */
 	nextCursor?: number;
-	/**
-	 * 다음 페이지 존재 여부
-	 */
 	hasNext: boolean;
 };
 
-/**
- * Person 변경 이력 항목
- */
 export type PersonChangeLogEntryRes = {
-	/**
-	 * 변경 이력 ID
-	 */
 	id: number;
-	/**
-	 * 변경 유형
-	 */
 	action:
 		| "CREATED"
 		| "UPDATED"
@@ -774,25 +312,10 @@ export type PersonChangeLogEntryRes = {
 		| "UNMERGED"
 		| "SOURCE_CONNECTED"
 		| "SOURCE_DISCONNECTED";
-	/**
-	 * 변경자 정보
-	 */
 	actor: ChangeLogMemberRes;
-	/**
-	 * 변경 내역 (CREATED/UPDATED 시)
-	 */
 	changes?: Array<FieldChangeRes>;
-	/**
-	 * 소스 정보 (SOURCE_CONNECTED/SOURCE_DISCONNECTED 시)
-	 */
 	source?: ChangeLogSourceRes;
-	/**
-	 * 병합 원본 Person 정보 (MERGED 시)
-	 */
 	mergedFrom?: MergedFromInfo;
-	/**
-	 * 변경 일시
-	 */
 	createdAt: string;
 };
 
@@ -800,95 +323,32 @@ export type StreamingResponseBody = {
 	[key: string]: unknown;
 };
 
-/**
- * Path 개요
- */
 export type PathOverviewRes = {
-	/**
-	 * 이벤트 수
-	 */
 	eventCount: number;
-	/**
-	 * 인원 수
-	 */
 	peopleCount: number;
-	/**
-	 * 채널 수
-	 */
 	channelCount: number;
 };
 
-/**
- * 이벤트 등록 추이 항목
- */
 export type EventTrendRes = {
-	/**
-	 * 이벤트 ID
-	 */
 	eventId: number;
-	/**
-	 * 이벤트 이름
-	 */
 	eventName: string;
-	/**
-	 * 이벤트 시작일
-	 */
 	startAt: string;
-	/**
-	 * 참가자 수
-	 */
 	personCount: number;
 };
 
-/**
- * Path 개요 통계
- */
 export type PathOverviewStatsRes = {
-	/**
-	 * 전체 인원 수
-	 */
 	totalPeople: number;
-	/**
-	 * 이번 달 신규 인원 수
-	 */
 	newPeopleThisMonth: number;
-	/**
-	 * 전체 채널 수
-	 */
 	totalChannels: number;
-	/**
-	 * 전체 이벤트 수
-	 */
 	totalEvents: number;
-	/**
-	 * 전체 기업 수
-	 */
 	totalCompanies: number;
-	/**
-	 * 주요 채널 (인원 수 내림차순)
-	 */
 	topChannels: Array<TopChannelRes>;
-	/**
-	 * 최근 이벤트별 등록 추이 (startAt 내림차순)
-	 */
 	latestTrend: Array<EventTrendRes>;
 };
 
-/**
- * 주요 채널 항목
- */
 export type TopChannelRes = {
-	/**
-	 * 채널 ID
-	 */
 	channelId: number;
-	/**
-	 * 채널 이름
-	 */
 	channelName: string;
-	/**
-	 * 인원 수
-	 */
 	personCount: number;
 };
 
@@ -907,43 +367,16 @@ export type IntegrationImportJobRes = {
 	completedAt?: string;
 };
 
-/**
- * 외부 이벤트 응답
- */
 export type ExternalEventRes = {
-	/**
-	 * 외부 이벤트 ID
-	 */
 	externalId: string;
-	/**
-	 * 이벤트 이름
-	 */
 	name: string;
 };
 
-/**
- * Import 작업 페이지 응답
- */
 export type BulkImportJobPageRes = {
-	/**
-	 * Import 작업 목록
-	 */
 	content: Array<BulkImportJobRes>;
-	/**
-	 * 전체 요소 수
-	 */
 	totalElements: number;
-	/**
-	 * 전체 페이지 수
-	 */
 	totalPages: number;
-	/**
-	 * 현재 페이지 번호 (0부터 시작)
-	 */
 	pageNumber: number;
-	/**
-	 * 페이지 크기
-	 */
 	pageSize: number;
 };
 
@@ -970,133 +403,43 @@ export type FailedRowRes = {
 	errorMessage?: string;
 };
 
-/**
- * Company 페이지 응답
- */
 export type CompanyPageRes = {
-	/**
-	 * Company 목록
-	 */
 	content: Array<CompanyRes>;
-	/**
-	 * 전체 요소 수
-	 */
 	totalElements: number;
-	/**
-	 * 전체 페이지 수
-	 */
 	totalPages: number;
-	/**
-	 * 현재 페이지 번호 (0부터 시작)
-	 */
 	pageNumber: number;
-	/**
-	 * 페이지 크기
-	 */
 	pageSize: number;
 };
 
-/**
- * 이벤트 참가자 추이 정보
- */
 export type EventParticipantInfo = {
-	/**
-	 * 이벤트 ID
-	 */
 	id: number;
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 이벤트 시작일시
-	 */
 	startAt: string;
-	/**
-	 * 총 참가자 수
-	 */
 	total: number;
-	/**
-	 * 최초 이벤트 참여자 수
-	 */
 	netNew: number;
-	/**
-	 * 재참여자 수
-	 */
 	returning: number;
-	/**
-	 * 최초 이벤트 참여자 비율 (0.0~1.0)
-	 */
 	netNewRate: number;
-	/**
-	 * 재참여자 비율 (0.0~1.0)
-	 */
 	returningRate: number;
 };
 
-/**
- * 이벤트 참가자 추이 분석 응답
- */
 export type EventParticipantTrendRes = {
-	/**
-	 * 이벤트별 참가자 추이 목록 (startAt 오름차순)
-	 */
 	events: Array<EventParticipantInfo>;
-	/**
-	 * 요약 통계
-	 */
 	summary: TrendSummary;
 };
 
-/**
- * 변화량
- */
 export type TrendDelta = {
-	/**
-	 * 변화율 절댓값 (0.0~)
-	 */
 	value: number;
-	/**
-	 * 증감 방향 (UP/DOWN/FLAT)
-	 */
 	trend: "UP" | "DOWN" | "FLAT";
 };
 
-/**
- * 요약 통계
- */
 export type TrendSummary = {
-	/**
-	 * 전체 고유 참가자 수
-	 */
 	uniqueAudience: number;
-	/**
-	 * 최근 이벤트 총 참가자 수
-	 */
 	latestTotal: number;
-	/**
-	 * 최근 이벤트 신규 참가자 비율 (0.0~1.0)
-	 */
 	latestNetNewRate: number;
-	/**
-	 * 최근 이벤트 재참여자 비율 (0.0~1.0, 이벤트 없으면 null)
-	 */
 	returnRate?: number;
-	/**
-	 * 최근 이벤트명
-	 */
 	latestName?: string;
-	/**
-	 * 직전 이벤트 대비 총 참가자 수 변화 (이벤트 2개 미만이면 null)
-	 */
 	totalDelta?: TrendDelta;
-	/**
-	 * 직전 이벤트 대비 신규 참가자 비율 변화 (이벤트 2개 미만이면 null)
-	 */
 	netNewRateDelta?: TrendDelta;
-	/**
-	 * 직전 이벤트 대비 재참여자 비율 변화 (이벤트 2개 미만이면 null)
-	 */
 	returnRateDelta?: TrendDelta;
 };
 
@@ -1119,33 +462,12 @@ export type ConcentrationRiskInsight = {
 	totalNetNew: number;
 };
 
-/**
- * 이벤트 인사이트 응답. 각 필드는 해당 인사이트가 감지되었을 때만 값이 존재하며, 감지되지 않으면 null이다.
- */
 export type EventInsightRes = {
-	/**
-	 * 데이터 부족 — 비교 가능 이벤트가 2개 미만일 때 감지. null이면 데이터 충분.
-	 */
 	limitedData?: LimitedDataInsight;
-	/**
-	 * 오디언스 믹스 — 신규 확장형 또는 재참여 편중 감지. null이면 해당 패턴 없음.
-	 */
 	audienceMix?: AudienceMixInsight;
-	/**
-	 * 도달 추세 — 신규 비율의 지속적 성장 또는 하락 감지. null이면 뚜렷한 추세 없음.
-	 */
 	reachMomentum?: ReachMomentumInsight;
-	/**
-	 * 돋보이는 이벤트 — 신규 비율·수가 중앙값 대비 돋보이는 이벤트 감지. null이면 해당 이벤트 없음.
-	 */
 	standout?: StandoutInsight;
-	/**
-	 * 신규 유입 급감 — 최근 이벤트에서 신규 비율이 연속 급락 감지. null이면 급감 없음.
-	 */
 	acquisitionDrop?: AcquisitionDropInsight;
-	/**
-	 * 집중 위험 — 단일 이벤트에 신규 인원이 과집중된 상태 감지. null이면 집중 위험 없음.
-	 */
 	concentrationRisk?: ConcentrationRiskInsight;
 };
 
@@ -1168,180 +490,63 @@ export type StandoutInsight = {
 	medianNetNew: number;
 };
 
-/**
- * 채널-이벤트 기여도 분석 응답
- */
 export type ChannelEventContributionRes = {
-	/**
-	 * 채널 정보
-	 */
 	channel: ContributionChannelInfo;
-	/**
-	 * 이벤트별 기여도 목록 (startAt 오름차순)
-	 */
 	events: Array<EventContribution>;
-	/**
-	 * 전체 통계
-	 */
 	metrics: ContributionMetrics;
 };
 
-/**
- * 채널 정보
- */
 export type ContributionChannelInfo = {
-	/**
-	 * 채널 ID
-	 */
 	id: number;
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘 (이모지)
-	 */
 	icon?: string;
-	/**
-	 * 채널 색상 (HEX)
-	 */
 	color?: string;
 };
 
-/**
- * 전체 통계 정보
- */
 export type ContributionMetrics = {
-	/**
-	 * 채널에서 이벤트에 참여한 총 고유 인원 수
-	 */
 	totalUniqueParticipants: number;
-	/**
-	 * 이벤트당 평균 기여 비율 (0.0~1.0)
-	 */
 	avgContributionRate: number;
 };
 
-/**
- * 이벤트 기여도 정보
- */
 export type EventContribution = {
-	/**
-	 * 이벤트 ID
-	 */
 	id: number;
-	/**
-	 * 이벤트명
-	 */
 	name: string;
-	/**
-	 * 이벤트 시작일시
-	 */
 	startAt: string;
-	/**
-	 * 채널에서 유입된 총 인원 수
-	 */
 	total: number;
-	/**
-	 * 최초 이벤트 참여자 수
-	 */
 	netNew: number;
-	/**
-	 * 재참여자 수
-	 */
 	returning: number;
-	/**
-	 * 최초 이벤트 참여자 비율 (0.0~1.0)
-	 */
 	netNewRate: number;
-	/**
-	 * 재참여자 비율 (0.0~1.0)
-	 */
 	returningRate: number;
 };
 
-/**
- * 채널 오버랩 분석 응답
- */
 export type ChannelOverlapRes = {
-	/**
-	 * 분석 대상 채널 목록
-	 */
 	channels: Array<OverlapChannelInfo>;
-	/**
-	 * 채널 간 교집합 목록
-	 */
 	intersections: Array<Intersection>;
-	/**
-	 * 전체 통계
-	 */
 	metrics: OverlapMetrics;
 };
 
-/**
- * 교집합 정보
- */
 export type Intersection = {
-	/**
-	 * 교집합을 이루는 채널 ID 목록
-	 */
 	channelIds: Array<number>;
-	/**
-	 * 교집합 인원 수
-	 */
 	count: number;
 };
 
-/**
- * 채널 정보
- */
 export type OverlapChannelInfo = {
-	/**
-	 * 채널 ID
-	 */
 	id: number;
-	/**
-	 * 채널명
-	 */
 	name: string;
-	/**
-	 * 채널 아이콘 (이모지)
-	 */
 	icon?: string;
-	/**
-	 * 채널 색상 (HEX)
-	 */
 	color?: string;
-	/**
-	 * 채널에 속한 총 인원 수
-	 */
 	personCount: number;
 };
 
-/**
- * 전체 통계 정보
- */
 export type OverlapMetrics = {
-	/**
-	 * 전체 고유 인원 수
-	 */
 	totalUniquePersons: number;
-	/**
-	 * 2개 이상 채널에 속한 인원 수
-	 */
 	personsInMultipleChannels: number;
-	/**
-	 * 2개 이상 채널에 속한 인원 비율 (0.0~1.0)
-	 */
 	multiChannelRate: number;
 };
 
 export type DeleteEventData = {
 	body?: never;
 	path: {
-		/**
-		 * 이벤트 ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1349,25 +554,16 @@ export type DeleteEventData = {
 };
 
 export type DeleteEventErrors = {
-	/**
-	 * EVENT_NOT_FOUND: error.event_not_found
-	 */
 	404: unknown;
 };
 
 export type DeleteEventResponses = {
-	/**
-	 * OK
-	 */
 	200: unknown;
 };
 
 export type UpdateEventData = {
 	body: UpdateEventReq;
 	path: {
-		/**
-		 * 이벤트 ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1375,24 +571,12 @@ export type UpdateEventData = {
 };
 
 export type UpdateEventErrors = {
-	/**
-	 * EVENT_NAME_BLANK: error.event_name_blank / EVENT_END_BEFORE_START: error.event_end_before_start
-	 */
 	400: unknown;
-	/**
-	 * EVENT_NOT_FOUND: error.event_not_found
-	 */
 	404: unknown;
-	/**
-	 * EVENT_NAME_DUPLICATED: error.event_name_duplicated
-	 */
 	409: unknown;
 };
 
 export type UpdateEventResponses = {
-	/**
-	 * OK
-	 */
 	200: EventRes;
 };
 
@@ -1402,9 +586,6 @@ export type UpdateEventResponse =
 export type GetCompanyData = {
 	body?: never;
 	path: {
-		/**
-		 * Company ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1412,16 +593,10 @@ export type GetCompanyData = {
 };
 
 export type GetCompanyErrors = {
-	/**
-	 * COMPANY_NOT_FOUND: error.company_not_found
-	 */
 	404: unknown;
 };
 
 export type GetCompanyResponses = {
-	/**
-	 * OK
-	 */
 	200: CompanyRes;
 };
 
@@ -1430,9 +605,6 @@ export type GetCompanyResponse = GetCompanyResponses[keyof GetCompanyResponses];
 export type UpdateCompanyData = {
 	body: UpdateCompanyReq;
 	path: {
-		/**
-		 * Company ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1440,16 +612,10 @@ export type UpdateCompanyData = {
 };
 
 export type UpdateCompanyErrors = {
-	/**
-	 * COMPANY_NOT_FOUND: error.company_not_found
-	 */
 	404: unknown;
 };
 
 export type UpdateCompanyResponses = {
-	/**
-	 * OK
-	 */
 	200: CompanyRes;
 };
 
@@ -1459,9 +625,6 @@ export type UpdateCompanyResponse =
 export type DeleteChannelData = {
 	body?: never;
 	path: {
-		/**
-		 * 채널 ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1469,25 +632,16 @@ export type DeleteChannelData = {
 };
 
 export type DeleteChannelErrors = {
-	/**
-	 * CHANNEL_NOT_FOUND: error.channel_not_found
-	 */
 	404: unknown;
 };
 
 export type DeleteChannelResponses = {
-	/**
-	 * OK
-	 */
 	200: unknown;
 };
 
 export type UpdateChannelData = {
 	body: UpdateChannelReq;
 	path: {
-		/**
-		 * 채널 ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1495,24 +649,12 @@ export type UpdateChannelData = {
 };
 
 export type UpdateChannelErrors = {
-	/**
-	 * CHANNEL_NAME_BLANK: error.channel_name_blank
-	 */
 	400: unknown;
-	/**
-	 * CHANNEL_NOT_FOUND: error.channel_not_found
-	 */
 	404: unknown;
-	/**
-	 * CHANNEL_NAME_DUPLICATED: error.channel_name_duplicated
-	 */
 	409: unknown;
 };
 
 export type UpdateChannelResponses = {
-	/**
-	 * OK
-	 */
 	200: ChannelRes;
 };
 
@@ -1522,13 +664,7 @@ export type UpdateChannelResponse =
 export type MergePersonData = {
 	body?: never;
 	path: {
-		/**
-		 * Source Person ID
-		 */
 		sourceId: number;
-		/**
-		 * Target Person ID
-		 */
 		targetId: number;
 	};
 	query?: never;
@@ -1536,16 +672,10 @@ export type MergePersonData = {
 };
 
 export type MergePersonErrors = {
-	/**
-	 * PERSON_NOT_FOUND: error.person_not_found
-	 */
 	404: unknown;
 };
 
 export type MergePersonResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonDetailRes;
 };
 
@@ -1555,9 +685,6 @@ export type MergePersonResponse =
 export type UndoMergePersonData = {
 	body?: never;
 	path: {
-		/**
-		 * MergeOperation ID
-		 */
 		mergeOperationId: number;
 	};
 	query?: never;
@@ -1565,29 +692,17 @@ export type UndoMergePersonData = {
 };
 
 export type UndoMergePersonErrors = {
-	/**
-	 * MERGE_OPERATION_NOT_FOUND: error.merge_not_found
-	 */
 	404: unknown;
-	/**
-	 * MERGE_ALREADY_UNDONE: error.merge_already_undone
-	 */
 	409: unknown;
 };
 
 export type UndoMergePersonResponses = {
-	/**
-	 * OK
-	 */
 	200: unknown;
 };
 
 export type CreateIntegrationImportData = {
 	body: IntegrationImportReq;
 	path: {
-		/**
-		 * Integration ID
-		 */
 		integrationId: number;
 	};
 	query?: never;
@@ -1595,9 +710,6 @@ export type CreateIntegrationImportData = {
 };
 
 export type CreateIntegrationImportResponses = {
-	/**
-	 * OK
-	 */
 	200: IntegrationImportRes;
 };
 
@@ -1608,22 +720,13 @@ export type ListImportJobsData = {
 	body?: never;
 	path?: never;
 	query?: {
-		/**
-		 * 페이지 번호 (0부터 시작)
-		 */
 		pageNumber?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
 	};
 	url: "/path/import";
 };
 
 export type ListImportJobsResponses = {
-	/**
-	 * OK
-	 */
 	200: BulkImportJobPageRes;
 };
 
@@ -1638,20 +741,11 @@ export type CreateImportData = {
 };
 
 export type CreateImportErrors = {
-	/**
-	 * IMPORT_MISSING_REQUIRED_FIELD: error.import_missing_required_field / IMPORT_DUPLICATE_MAPPING: error.import_duplicate_mapping
-	 */
 	400: unknown;
-	/**
-	 * STORAGE_OBJECT_NOT_FOUND: error.storage_object_not_found / SOURCE_NOT_FOUND: error.source_not_found
-	 */
 	404: unknown;
 };
 
 export type CreateImportResponses = {
-	/**
-	 * OK
-	 */
 	200: CreateImportRes;
 };
 
@@ -1660,9 +754,6 @@ export type CreateImportResponse =
 
 export type AnalyzeImportData = {
 	body?: {
-		/**
-		 * CSV 파일
-		 */
 		file: Blob | File;
 	};
 	path?: never;
@@ -1671,16 +762,10 @@ export type AnalyzeImportData = {
 };
 
 export type AnalyzeImportErrors = {
-	/**
-	 * IMPORT_FILE_EMPTY: error.import_file_empty / IMPORT_FILE_INVALID_FORMAT: error.import_file_invalid_format / IMPORT_FILE_TOO_LARGE: error.import_file_too_large
-	 */
 	400: unknown;
 };
 
 export type AnalyzeImportResponses = {
-	/**
-	 * OK
-	 */
 	200: AnalyzeRes;
 };
 
@@ -1695,9 +780,6 @@ export type ListEventsData = {
 };
 
 export type ListEventsResponses = {
-	/**
-	 * OK
-	 */
 	200: Array<EventRes>;
 };
 
@@ -1711,20 +793,11 @@ export type CreateEventData = {
 };
 
 export type CreateEventErrors = {
-	/**
-	 * EVENT_NAME_BLANK: error.event_name_blank / EVENT_END_BEFORE_START: error.event_end_before_start
-	 */
 	400: unknown;
-	/**
-	 * EVENT_NAME_DUPLICATED: error.event_name_duplicated
-	 */
 	409: unknown;
 };
 
 export type CreateEventResponses = {
-	/**
-	 * OK
-	 */
 	200: EventRes;
 };
 
@@ -1734,9 +807,6 @@ export type CreateEventResponse =
 export type ListEventPeopleData = {
 	body?: never;
 	path: {
-		/**
-		 * 이벤트 ID
-		 */
 		eventId: number;
 	};
 	query?: {
@@ -1745,33 +815,18 @@ export type ListEventPeopleData = {
 		companyId?: number;
 		companyName?: string;
 		jobTitle?: string;
-		/**
-		 * 페이지 번호 (0부터 시작)
-		 */
 		pageNumber?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
-		/**
-		 * 정렬, examples의 필드만 허용 ({field},{asc|desc})
-		 */
 		sort?: Array<string>;
 	};
 	url: "/path/event/{eventId}/person";
 };
 
 export type ListEventPeopleErrors = {
-	/**
-	 * SOURCE_NOT_FOUND: error.source_not_found
-	 */
 	404: unknown;
 };
 
 export type ListEventPeopleResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonPageRes;
 };
 
@@ -1781,9 +836,6 @@ export type ListEventPeopleResponse =
 export type CreateEventPersonData = {
 	body: CreatePersonReq;
 	path: {
-		/**
-		 * 이벤트 ID
-		 */
 		eventId: number;
 	};
 	query?: never;
@@ -1791,20 +843,11 @@ export type CreateEventPersonData = {
 };
 
 export type CreateEventPersonErrors = {
-	/**
-	 * PERSON_INVALID_EMAIL: error.person_invalid_email / PERSON_INVALID_PHONE: error.person_invalid_phone
-	 */
 	400: unknown;
-	/**
-	 * EVENT_NOT_FOUND: error.event_not_found
-	 */
 	404: unknown;
 };
 
 export type CreateEventPersonResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonDetailRes;
 };
 
@@ -1819,9 +862,6 @@ export type ListChannelsData = {
 };
 
 export type ListChannelsResponses = {
-	/**
-	 * OK
-	 */
 	200: Array<ChannelRes>;
 };
 
@@ -1836,20 +876,11 @@ export type CreateChannelData = {
 };
 
 export type CreateChannelErrors = {
-	/**
-	 * CHANNEL_NAME_BLANK: error.channel_name_blank
-	 */
 	400: unknown;
-	/**
-	 * CHANNEL_NAME_DUPLICATED: error.channel_name_duplicated
-	 */
 	409: unknown;
 };
 
 export type CreateChannelResponses = {
-	/**
-	 * OK
-	 */
 	200: ChannelRes;
 };
 
@@ -1859,9 +890,6 @@ export type CreateChannelResponse =
 export type ListChannelPeopleData = {
 	body?: never;
 	path: {
-		/**
-		 * 채널 ID
-		 */
 		channelId: number;
 	};
 	query?: {
@@ -1870,33 +898,18 @@ export type ListChannelPeopleData = {
 		companyId?: number;
 		companyName?: string;
 		jobTitle?: string;
-		/**
-		 * 페이지 번호 (0부터 시작)
-		 */
 		pageNumber?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
-		/**
-		 * 정렬, examples의 필드만 허용 ({field},{asc|desc})
-		 */
 		sort?: Array<string>;
 	};
 	url: "/path/channel/{channelId}/person";
 };
 
 export type ListChannelPeopleErrors = {
-	/**
-	 * SOURCE_NOT_FOUND: error.source_not_found
-	 */
 	404: unknown;
 };
 
 export type ListChannelPeopleResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonPageRes;
 };
 
@@ -1906,9 +919,6 @@ export type ListChannelPeopleResponse =
 export type CreateChannelPersonData = {
 	body: CreatePersonReq;
 	path: {
-		/**
-		 * 채널 ID
-		 */
 		channelId: number;
 	};
 	query?: never;
@@ -1916,20 +926,11 @@ export type CreateChannelPersonData = {
 };
 
 export type CreateChannelPersonErrors = {
-	/**
-	 * PERSON_INVALID_EMAIL: error.person_invalid_email / PERSON_INVALID_PHONE: error.person_invalid_phone
-	 */
 	400: unknown;
-	/**
-	 * CHANNEL_NOT_FOUND: error.channel_not_found
-	 */
 	404: unknown;
 };
 
 export type CreateChannelPersonResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonDetailRes;
 };
 
@@ -1939,9 +940,6 @@ export type CreateChannelPersonResponse =
 export type DeletePersonData = {
 	body?: never;
 	path: {
-		/**
-		 * Person ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1949,25 +947,16 @@ export type DeletePersonData = {
 };
 
 export type DeletePersonErrors = {
-	/**
-	 * PERSON_NOT_FOUND: error.person_not_found
-	 */
 	404: unknown;
 };
 
 export type DeletePersonResponses = {
-	/**
-	 * OK
-	 */
 	200: unknown;
 };
 
 export type GetPersonData = {
 	body?: never;
 	path: {
-		/**
-		 * Person ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -1975,16 +964,10 @@ export type GetPersonData = {
 };
 
 export type GetPersonErrors = {
-	/**
-	 * PERSON_NOT_FOUND: error.person_not_found
-	 */
 	404: unknown;
 };
 
 export type GetPersonResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonDetailRes;
 };
 
@@ -1993,9 +976,6 @@ export type GetPersonResponse = GetPersonResponses[keyof GetPersonResponses];
 export type UpdatePersonData = {
 	body: UpdatePersonReq;
 	path: {
-		/**
-		 * Person ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -2003,24 +983,12 @@ export type UpdatePersonData = {
 };
 
 export type UpdatePersonErrors = {
-	/**
-	 * PERSON_INVALID_EMAIL: error.person_invalid_email / PERSON_INVALID_PHONE: error.person_invalid_phone
-	 */
 	400: unknown;
-	/**
-	 * PERSON_NOT_FOUND: error.person_not_found
-	 */
 	404: unknown;
-	/**
-	 * PERSON_DUPLICATE_EMAIL: error.person_duplicate_email
-	 */
 	409: unknown;
 };
 
 export type UpdatePersonResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonDetailRes;
 };
 
@@ -2037,26 +1005,14 @@ export type ListPeopleData = {
 		companyId?: number;
 		companyName?: string;
 		jobTitle?: string;
-		/**
-		 * 페이지 번호 (0부터 시작)
-		 */
 		pageNumber?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
-		/**
-		 * 정렬, examples의 필드만 허용 ({field},{asc|desc})
-		 */
 		sort?: Array<string>;
 	};
 	url: "/path/person";
 };
 
 export type ListPeopleResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonPageRes;
 };
 
@@ -2065,35 +1021,20 @@ export type ListPeopleResponse = ListPeopleResponses[keyof ListPeopleResponses];
 export type GetActivityData = {
 	body?: never;
 	path: {
-		/**
-		 * Person ID
-		 */
 		personId: number;
 	};
 	query?: {
-		/**
-		 * 커서 (이전 응답의 nextCursor, 첫 페이지는 생략)
-		 */
 		cursor?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
 	};
 	url: "/path/person/{personId}/activity";
 };
 
 export type GetActivityErrors = {
-	/**
-	 * PERSON_NOT_FOUND: error.person_not_found
-	 */
 	404: unknown;
 };
 
 export type GetActivityResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonActivityRes;
 };
 
@@ -2108,9 +1049,6 @@ export type ExportPeopleCsvData = {
 };
 
 export type ExportPeopleCsvResponses = {
-	/**
-	 * OK
-	 */
 	200: StreamingResponseBody;
 };
 
@@ -2125,9 +1063,6 @@ export type GetOverviewData = {
 };
 
 export type GetOverviewResponses = {
-	/**
-	 * OK
-	 */
 	200: PathOverviewRes;
 };
 
@@ -2138,18 +1073,12 @@ export type GetStatsData = {
 	body?: never;
 	path?: never;
 	query?: {
-		/**
-		 * 클라이언트 타임존
-		 */
 		timeZone?: string;
 	};
 	url: "/path/overview/stats";
 };
 
 export type GetStatsResponses = {
-	/**
-	 * OK
-	 */
 	200: PathOverviewStatsRes;
 };
 
@@ -2158,13 +1087,7 @@ export type GetStatsResponse = GetStatsResponses[keyof GetStatsResponses];
 export type GetIntegrationImportJobData = {
 	body?: never;
 	path: {
-		/**
-		 * Integration ID
-		 */
 		integrationId: number;
-		/**
-		 * Import Job ID
-		 */
 		jobId: number;
 	};
 	query?: never;
@@ -2172,9 +1095,6 @@ export type GetIntegrationImportJobData = {
 };
 
 export type GetIntegrationImportJobResponses = {
-	/**
-	 * OK
-	 */
 	200: IntegrationImportJobRes;
 };
 
@@ -2184,9 +1104,6 @@ export type GetIntegrationImportJobResponse =
 export type GetIntegrationImportCandidatesData = {
 	body?: never;
 	path: {
-		/**
-		 * Integration ID
-		 */
 		integrationId: number;
 	};
 	query?: never;
@@ -2194,9 +1111,6 @@ export type GetIntegrationImportCandidatesData = {
 };
 
 export type GetIntegrationImportCandidatesResponses = {
-	/**
-	 * OK
-	 */
 	200: Array<ExternalEventRes>;
 };
 
@@ -2213,16 +1127,10 @@ export type GetImportJobData = {
 };
 
 export type GetImportJobErrors = {
-	/**
-	 * IMPORT_JOB_NOT_FOUND: error.import_job_not_found
-	 */
 	404: unknown;
 };
 
 export type GetImportJobResponses = {
-	/**
-	 * OK
-	 */
 	200: BulkImportJobRes;
 };
 
@@ -2232,9 +1140,6 @@ export type GetImportJobResponse =
 export type ExportFailedRowsCsvData = {
 	body?: never;
 	path: {
-		/**
-		 * Import Job ID
-		 */
 		id: number;
 	};
 	query?: never;
@@ -2242,20 +1147,11 @@ export type ExportFailedRowsCsvData = {
 };
 
 export type ExportFailedRowsCsvErrors = {
-	/**
-	 * IMPORT_JOB_NOT_COMPLETED: error.import_job_not_completed
-	 */
 	400: unknown;
-	/**
-	 * IMPORT_JOB_NOT_FOUND: error.import_job_not_found
-	 */
 	404: unknown;
 };
 
 export type ExportFailedRowsCsvResponses = {
-	/**
-	 * OK
-	 */
 	200: string;
 };
 
@@ -2265,9 +1161,6 @@ export type ExportFailedRowsCsvResponse =
 export type ExportEventPeopleCsvData = {
 	body?: never;
 	path: {
-		/**
-		 * 이벤트 ID
-		 */
 		eventId: number;
 	};
 	query?: never;
@@ -2275,16 +1168,10 @@ export type ExportEventPeopleCsvData = {
 };
 
 export type ExportEventPeopleCsvErrors = {
-	/**
-	 * EVENT_NOT_FOUND: error.event_not_found
-	 */
 	404: unknown;
 };
 
 export type ExportEventPeopleCsvResponses = {
-	/**
-	 * OK
-	 */
 	200: StreamingResponseBody;
 };
 
@@ -2295,26 +1182,14 @@ export type ListCompaniesData = {
 	body?: never;
 	path?: never;
 	query?: {
-		/**
-		 * 검색 키워드 (도메인, 표시 이름)
-		 */
 		keyword?: string;
-		/**
-		 * 페이지 번호 (0부터 시작)
-		 */
 		pageNumber?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
 	};
 	url: "/path/company";
 };
 
 export type ListCompaniesResponses = {
-	/**
-	 * OK
-	 */
 	200: CompanyPageRes;
 };
 
@@ -2324,9 +1199,6 @@ export type ListCompaniesResponse =
 export type ListCompanyPeopleData = {
 	body?: never;
 	path: {
-		/**
-		 * Company ID
-		 */
 		companyId: number;
 	};
 	query?: {
@@ -2335,33 +1207,18 @@ export type ListCompanyPeopleData = {
 		eventId?: Array<number>;
 		companyName?: string;
 		jobTitle?: string;
-		/**
-		 * 페이지 번호 (0부터 시작)
-		 */
 		pageNumber?: number;
-		/**
-		 * 페이지 크기
-		 */
 		pageSize?: number;
-		/**
-		 * 정렬, examples의 필드만 허용 ({field},{asc|desc})
-		 */
 		sort?: Array<string>;
 	};
 	url: "/path/company/{companyId}/person";
 };
 
 export type ListCompanyPeopleErrors = {
-	/**
-	 * COMPANY_NOT_FOUND: error.company_not_found
-	 */
 	404: unknown;
 };
 
 export type ListCompanyPeopleResponses = {
-	/**
-	 * OK
-	 */
 	200: PersonPageRes;
 };
 
@@ -2371,9 +1228,6 @@ export type ListCompanyPeopleResponse =
 export type ExportCompanyPeopleCsvData = {
 	body?: never;
 	path: {
-		/**
-		 * Company ID
-		 */
 		companyId: number;
 	};
 	query?: never;
@@ -2381,16 +1235,10 @@ export type ExportCompanyPeopleCsvData = {
 };
 
 export type ExportCompanyPeopleCsvErrors = {
-	/**
-	 * COMPANY_NOT_FOUND: error.company_not_found
-	 */
 	404: unknown;
 };
 
 export type ExportCompanyPeopleCsvResponses = {
-	/**
-	 * OK
-	 */
 	200: StreamingResponseBody;
 };
 
@@ -2400,9 +1248,6 @@ export type ExportCompanyPeopleCsvResponse =
 export type ExportChannelPeopleCsvData = {
 	body?: never;
 	path: {
-		/**
-		 * 채널 ID
-		 */
 		channelId: number;
 	};
 	query?: never;
@@ -2410,16 +1255,10 @@ export type ExportChannelPeopleCsvData = {
 };
 
 export type ExportChannelPeopleCsvErrors = {
-	/**
-	 * CHANNEL_NOT_FOUND: error.channel_not_found
-	 */
 	404: unknown;
 };
 
 export type ExportChannelPeopleCsvResponses = {
-	/**
-	 * OK
-	 */
 	200: StreamingResponseBody;
 };
 
@@ -2434,9 +1273,6 @@ export type GetEventParticipantTrendData = {
 };
 
 export type GetEventParticipantTrendResponses = {
-	/**
-	 * OK
-	 */
 	200: EventParticipantTrendRes;
 };
 
@@ -2451,9 +1287,6 @@ export type GetEventInsightsData = {
 };
 
 export type GetEventInsightsResponses = {
-	/**
-	 * OK
-	 */
 	200: EventInsightRes;
 };
 
@@ -2463,35 +1296,20 @@ export type GetEventInsightsResponse =
 export type GetChannelEventContributionData = {
 	body?: never;
 	path: {
-		/**
-		 * 분석할 채널 ID
-		 */
 		channelId: number;
 	};
 	query: {
-		/**
-		 * 분석할 이벤트 ID 목록 (최소 1개)
-		 */
 		eventIds: Array<number>;
 	};
 	url: "/path/analysis/channel/{channelId}/attribution";
 };
 
 export type GetChannelEventContributionErrors = {
-	/**
-	 * ANALYSIS_EVENT_IDS_REQUIRED: error.analysis_event_ids_required
-	 */
 	400: unknown;
-	/**
-	 * CHANNEL_NOT_FOUND: error.channel_not_found / EVENT_NOT_FOUND: error.event_not_found
-	 */
 	404: unknown;
 };
 
 export type GetChannelEventContributionResponses = {
-	/**
-	 * OK
-	 */
 	200: ChannelEventContributionRes;
 };
 
@@ -2502,29 +1320,17 @@ export type GetChannelOverlapData = {
 	body?: never;
 	path?: never;
 	query: {
-		/**
-		 * 분석할 채널 ID 목록 (최소 2개, 최대 5개)
-		 */
 		channelIds: Array<number>;
 	};
 	url: "/path/analysis/channel/audience";
 };
 
 export type GetChannelOverlapErrors = {
-	/**
-	 * ANALYSIS_CHANNEL_IDS_REQUIRED: error.analysis_channel_ids_required / ANALYSIS_CHANNEL_IDS_EXCEEDED: error.analysis_channel_ids_exceeded
-	 */
 	400: unknown;
-	/**
-	 * CHANNEL_NOT_FOUND: error.channel_not_found
-	 */
 	404: unknown;
 };
 
 export type GetChannelOverlapResponses = {
-	/**
-	 * OK
-	 */
 	200: ChannelOverlapRes;
 };
 

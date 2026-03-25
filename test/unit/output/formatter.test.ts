@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  CsvFormatter,
-  JsonFormatter,
-  TableFormatter,
-  createFormatter,
-} from "../../../src/output/index.js";
+import { CsvFormatter } from "../../../src/output/csv.js";
+import { createFormatter } from "../../../src/output/index.js";
+import { JsonFormatter } from "../../../src/output/json.js";
+import { TableFormatter } from "../../../src/output/table.js";
 
 describe("createFormatter", () => {
   it("creates a json formatter", () => {

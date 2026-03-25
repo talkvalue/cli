@@ -176,13 +176,25 @@ describe("createChannelCommand", () => {
     });
   });
 
-  it("requires --name for update", async () => {
+  it("requires at least one field for update", async () => {
     const harness = createHarness();
 
-    await expect(harness.run(["update", "4", "--icon", "new-icon"])).rejects.toBeInstanceOf(
-      UsageError,
-    );
+    await expect(harness.run(["update", "4"])).rejects.toBeInstanceOf(UsageError);
     expect(Channel.updateChannel).not.toHaveBeenCalled();
+  });
+
+  it("updates icon only without --name", async () => {
+    const harness = createHarness();
+    vi.mocked(Channel.updateChannel).mockResolvedValueOnce({ data: {} } as any);
+
+    await harness.run(["update", "4", "--icon", "🔥"]);
+
+    expect(Channel.updateChannel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: { id: 4 },
+        body: { icon: "🔥" },
+      }),
+    );
   });
 
   it("forwards update payload", async () => {

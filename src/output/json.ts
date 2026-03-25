@@ -24,14 +24,8 @@ export class JsonFormatter implements Formatter {
     this.write(payload);
   }
 
-  error(error: Error, ctx: OutputContext): void {
-    const payload = {
-      error: {
-        message: error.message,
-      },
-      ...(ctx.pagination ? { pagination: ctx.pagination } : {}),
-    };
-
+  error(error: Error, _ctx: OutputContext): void {
+    const payload = { error: { message: error.message } };
     process.stderr.write(`${JSON.stringify(payload, null, 2)}\n`);
   }
 

@@ -1,10 +1,17 @@
-import { Command, InvalidArgumentError } from "commander";
+import { Command } from "commander";
 
 import { Company } from "../../api/generated/path/sdk.gen.js";
 import type { UpdateCompanyReq } from "../../api/generated/path/types.gen.js";
 import { unwrap } from "../../api/unwrap.js";
-import type { ColumnDef, Formatter, OutputContext } from "../../output/index.js";
+import type { ColumnDef, Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
+import {
+  collectNumber,
+  collectString,
+  parseInteger,
+  parseNumericId,
+  toOutputContext,
+} from "../../shared/utils.js";
 
 export interface CompanyCommandDependencies {
   formatter?: Formatter;
@@ -45,35 +52,7 @@ const PERSON_LIST_COLUMNS: ColumnDef[] = [
   { header: "Created At", key: "createdAt" },
 ];
 
-function parseInteger(value: string, label: string): number {
-  const parsed = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsed)) {
-    throw new InvalidArgumentError(`${label} must be a number`);
-  }
-
-  return parsed;
-}
-
-function parseId(value: string): number {
-  return parseInteger(value, "id");
-}
-
-function collectNumber(label: string): (value: string, previous: number[]) => number[] {
-  return (value: string, previous: number[]): number[] => {
-    return [...previous, parseInteger(value, label)];
-  };
-}
-
-function collectString(value: string, previous: string[]): string[] {
-  return [...previous, value];
-}
-
-function toOutputContext(pagination?: OutputContext["pagination"]): OutputContext {
-  return {
-    pagination,
-  };
-}
+const parseId = (value: string): number => parseNumericId(value, "id");
 
 function resolveWriteStdout(dependencies: CompanyCommandDependencies): (text: string) => void {
   if (dependencies.writeStdout !== undefined) {
@@ -235,8 +214,12 @@ export function createCompanyCommand(dependencies: CompanyCommandDependencies = 
     .command("export")
     .argument("<companyId>", "company id", parseId)
     .description("Export people in a company as CSV")
-    .action(async (companyId: number) => {
-      await ensureAuth(companyCommand);
+    .action(async (companyId: number, _opts: unknown, cmd: Command) => {
+      const globals = cmd.optsWithGlobals<{ format?: string; json?: boolean }>();
+      if (globals.format || globals.json) {
+        process.stderr.write("Warning: export commands always output CSV regardless of --format\n");
+      }
+      await ensureAuth(cmd);
       const { response } = await Company.exportCompanyPeopleCsv({
         path: { companyId },
         parseAs: "stream",

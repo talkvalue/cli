@@ -11,12 +11,8 @@ export class CsvFormatter implements Formatter {
     process.stdout.write(`${lines.join("\n")}\n`);
   }
 
-  list(items: Record<string, unknown>[], columns: ColumnDef[], ctx: OutputContext): void {
+  list(items: Record<string, unknown>[], columns: ColumnDef[], _ctx: OutputContext): void {
     const lines = this.renderRows(items, columns);
-    if (ctx.pagination) {
-      const { page, totalPages, totalElements } = ctx.pagination;
-      lines.push(`# Page ${page} of ${totalPages} (${totalElements} total)`);
-    }
     process.stdout.write(`${lines.join("\n")}\n`);
   }
 
@@ -62,7 +58,12 @@ export class CsvFormatter implements Formatter {
   private escapeCsv(value: string): string {
     const escaped = value.replaceAll('"', '""');
 
-    if (escaped.includes(",") || escaped.includes('"') || escaped.includes("\n")) {
+    if (
+      escaped.includes(",") ||
+      escaped.includes('"') ||
+      escaped.includes("\n") ||
+      escaped.includes("\r")
+    ) {
       return `"${escaped}"`;
     }
 
