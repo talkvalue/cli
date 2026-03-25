@@ -39,7 +39,6 @@ describe("auth list", () => {
       },
       formatter: { list: mockList, output: vi.fn(), error: vi.fn() },
       output: {},
-      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any);
 
     const cmd = createAuthListCommand();
@@ -67,7 +66,6 @@ describe("auth list", () => {
       },
       formatter: { list: mockList, output: vi.fn(), error: vi.fn() },
       output: {},
-      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any);
 
     const cmd = createAuthListCommand();

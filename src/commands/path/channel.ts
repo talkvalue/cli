@@ -12,6 +12,8 @@ import { UsageError } from "../../errors/index.js";
 import type { Formatter } from "../../output/index.js";
 import { ensureAuth, resolveFormatter } from "../../shared/context.js";
 import {
+  collectNumber,
+  collectString,
   parseNumericId,
   pickDefined,
   toOutputContext,
@@ -47,9 +49,14 @@ interface DeleteChannelOptions {
 }
 
 interface PeopleCommandOptions {
+  companyId?: number;
+  companyName?: string;
+  eventId: number[];
+  jobTitle?: string;
   keyword?: string;
   page?: number;
   pageSize?: number;
+  sort: string[];
 }
 
 interface CreateChannelOptions {
@@ -199,20 +206,32 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .description("List people in a channel")
     .argument("<channelId>", "channel id")
     .option("--keyword <keyword>", "filter by keyword")
+    .option("--event-id <id>", "filter by event", collectNumber("event-id"), [])
+    .option("--company-id <id>", "filter by company id", (v: string) =>
+      parseNumericId(v, "company-id"),
+    )
+    .option("--company-name <name>", "filter by company name")
+    .option("--job-title <title>", "filter by job title")
     .option("--page <page>", "page number", (v: string) => parseNumericId(v, "page"))
     .option("--page-size <pageSize>", "page size", (v: string) => parseNumericId(v, "page-size"))
+    .option("--sort <value>", "sort expression", collectString, [])
     .action(async (rawChannelId: string, peopleOptions: PeopleCommandOptions, command: Command) => {
       const formatter = resolveFormatter(command, options);
       await ensureAuth(command);
       const channelId = parseNumericId(rawChannelId, "channel id");
-      const filters = pickDefined<PersonFilterParams>({
+      const query = pickDefined<PersonFilterParams>({
+        companyId: peopleOptions.companyId,
+        companyName: peopleOptions.companyName,
+        eventId: peopleOptions.eventId.length > 0 ? peopleOptions.eventId : undefined,
+        jobTitle: peopleOptions.jobTitle,
         keyword: peopleOptions.keyword,
         pageNumber: peopleOptions.page,
         pageSize: peopleOptions.pageSize,
+        sort: peopleOptions.sort.length > 0 ? peopleOptions.sort : undefined,
       });
       const { data: result } = await Channel.listChannelPeople({
         path: { channelId },
-        query: filters,
+        query,
       });
       const page = unwrap(result, "channel people");
       formatter.list(

@@ -22,6 +22,7 @@ interface PersonCommandDependencies {
 
 interface ListOptions {
   channelId: number[];
+  companyId?: number;
   companyName?: string;
   eventId: number[];
   jobTitle?: string;
@@ -75,6 +76,10 @@ function buildFilterParams(options: ListOptions): PersonFilterParams {
 
   if (options.eventId.length > 0) {
     filters.eventId = options.eventId;
+  }
+
+  if (options.companyId !== undefined) {
+    filters.companyId = options.companyId;
   }
 
   if (options.companyName !== undefined) {
@@ -180,6 +185,9 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
     .option("--keyword <keyword>", "keyword filter")
     .option("--channel-id <id>", "channel filter", collectNumber("channel-id"), [])
     .option("--event-id <id>", "event filter", collectNumber("event-id"), [])
+    .option("--company-id <id>", "company id filter", (v: string) =>
+      parseNumericId(v, "company-id"),
+    )
     .option("--company-name <name>", "company name filter")
     .option("--job-title <title>", "job title filter")
     .option("--page <n>", "page number", (value: string) => parseInteger(value, "page"))
