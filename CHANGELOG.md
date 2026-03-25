@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/talkvalue/cli/compare/v1.2.1...v1.2.2) (2026-03-25)
+
+
+### Bug Fixes
+
+* fix interceptor retry error parsing, Commander parser pattern, keyring probe ([ab5ee02](https://github.com/talkvalue/cli/commit/ab5ee02401a6557cb8e290b133e2a0c158783c63))
+
 ## [1.2.1](https://github.com/talkvalue/cli/compare/v1.2.0...v1.2.1) (2026-03-25)
 
 
