@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/talkvalue/cli/compare/v1.1.2...v1.2.0) (2026-03-25)
+
+
+### Features
+
+* add event, company, analysis, import commands and person extensions ([8d501f2](https://github.com/talkvalue/cli/commit/8d501f237de9eaf076084ccfb2fd049f72169fbc))
+
 ## [1.1.2](https://github.com/talkvalue/cli/compare/v1.1.1...v1.1.2) (2026-03-24)
 
 
