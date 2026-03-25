@@ -189,6 +189,7 @@ export type {
 	PersonChangeLogEntryRes,
 	PersonChannelDetailRes,
 	PersonChannelRes,
+	PersonCompanyRes,
 	PersonDetailRes,
 	PersonEventDetailRes,
 	PersonEventRes,

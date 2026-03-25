@@ -2,7 +2,7 @@
 name: talkvalue-company
 description: "View and manage companies and their associated contacts."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "productivity"
     requires:

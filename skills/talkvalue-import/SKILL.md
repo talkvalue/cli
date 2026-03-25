@@ -2,7 +2,7 @@
 name: talkvalue-import
 description: "CSV import: analyze files, create import jobs, monitor progress, and export failures."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "productivity"
     requires:

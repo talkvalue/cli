@@ -2,7 +2,7 @@
 name: talkvalue-shared
 description: "TalkValue CLI: Shared patterns for authentication, global flags, output formatting, and environment variables."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "productivity"
     requires:

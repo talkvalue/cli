@@ -2,7 +2,7 @@
 name: recipe-new-registrants
 description: "Find this month's event registrants and export them."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "recipe"
     domain: "events"

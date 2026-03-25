@@ -35,6 +35,7 @@ interface ListOptions {
 interface UpdateOptions {
   address?: string;
   avatarUrl?: string;
+  companyId?: number;
   companyName?: string;
   email: string[];
   firstName?: string;
@@ -44,6 +45,7 @@ interface UpdateOptions {
   phone: string[];
   primaryEmail?: string;
   primaryPhone?: string;
+  removeCompany?: boolean;
   xUrl?: string;
 }
 
@@ -156,6 +158,14 @@ function buildUpdatePayload(options: UpdateOptions): UpdatePersonReq {
     payload.companyName = options.companyName;
   }
 
+  if (options.companyId !== undefined) {
+    payload.companyId = options.companyId;
+  }
+
+  if (options.removeCompany) {
+    payload.removeCompany = true;
+  }
+
   return payload;
 }
 
@@ -244,6 +254,8 @@ export function createPersonCommand(dependencies: PersonCommandDependencies = {}
     .option("--linkedin-url <url>")
     .option("--x-url <url>")
     .option("--company-name <name>")
+    .option("--company-id <id>", "company id", (v: string) => parseNumericId(v, "company-id"))
+    .option("--remove-company", "remove company assignment")
     .action(async (id: number, options: UpdateOptions, command: Command) => {
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);

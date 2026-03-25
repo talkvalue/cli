@@ -2,7 +2,7 @@
 name: talkvalue-channel
 description: "Manage marketing channels and channel members."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "productivity"
     requires:

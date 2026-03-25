@@ -2,7 +2,7 @@
 name: talkvalue-analysis
 description: "Channel attribution, audience overlap, and event analytics."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "productivity"
     requires:

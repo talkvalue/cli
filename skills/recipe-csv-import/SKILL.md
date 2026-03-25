@@ -2,7 +2,7 @@
 name: recipe-csv-import
 description: "Full CSV import workflow: analyze a file, create an import job, monitor progress, and export failures."
 metadata:
-  version: 1.2.2
+  version: 1.0.0
   openclaw:
     category: "recipe"
     domain: "data"

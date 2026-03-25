@@ -4,17 +4,41 @@ export type ClientOptions = {
 	baseUrl: "http://localhost:8080" | (string & {});
 };
 
+/**
+ * 조직 개요
+ */
 export type AuthOverviewRes = {
+	/**
+	 * 팀 멤버 수
+	 */
 	teamMemberCount: number;
+	/**
+	 * 사용자 이름
+	 */
 	memberFirstName?: string;
 };
 
+/**
+ * 조직 목록
+ */
 export type OrganizationListRes = {
+	/**
+	 * 조직 목록
+	 */
 	data: Array<OrganizationRes>;
 };
 
+/**
+ * 조직 정보
+ */
 export type OrganizationRes = {
+	/**
+	 * 조직 IdP ID
+	 */
 	id: string;
+	/**
+	 * 조직명
+	 */
 	name: string;
 };
 
@@ -29,6 +53,9 @@ export type HandleWebhookData = {
 };
 
 export type HandleWebhookResponses = {
+	/**
+	 * OK
+	 */
 	200: unknown;
 };
 
@@ -40,6 +67,9 @@ export type GetOverviewData = {
 };
 
 export type GetOverviewResponses = {
+	/**
+	 * OK
+	 */
 	200: AuthOverviewRes;
 };
 
@@ -54,6 +84,9 @@ export type GetOrganizationsData = {
 };
 
 export type GetOrganizationsResponses = {
+	/**
+	 * OK
+	 */
 	200: OrganizationListRes;
 };
 
