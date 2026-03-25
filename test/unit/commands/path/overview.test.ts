@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Overview } from "../../../../src/api/generated/path/sdk.gen.js";
 import { createPathCommand } from "../../../../src/commands/path/index.js";
+import { AuthError, CliError } from "../../../../src/errors/index.js";
 import * as sharedModule from "../../../../src/shared/context.js";
 
 vi.mock("../../../../src/shared/context.js");
@@ -46,7 +47,7 @@ describe("path overview commands", () => {
         token: undefined,
       },
       formatter: mockFormatter,
-      output: { command: "path overview", timestamp: "2026-01-01T00:00:00.000Z" },
+      output: {},
       profile: "dev",
     });
     vi.mocked(sharedModule.requireAuth).mockResolvedValue(undefined);
@@ -70,6 +71,45 @@ describe("path overview commands", () => {
     expect(sharedModule.requireAuth).toHaveBeenCalledTimes(1);
     expect(Overview.getOverview).toHaveBeenCalledTimes(1);
     expect(mockFormatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("requires auth before running overview", async () => {
+    vi.mocked(sharedModule.requireAuth).mockRejectedValueOnce(new AuthError("missing token"));
+
+    await expect(
+      createRoot().parseAsync(["node", "test", "--format", "json", "path", "overview"]),
+    ).rejects.toBeInstanceOf(AuthError);
+
+    expect(sharedModule.requireAuth).toHaveBeenCalledTimes(1);
+    expect(Overview.getOverview).not.toHaveBeenCalled();
+    expect(mockFormatter.output).not.toHaveBeenCalled();
+  });
+
+  it("propagates api error from overview", async () => {
+    vi.mocked(Overview.getOverview).mockRejectedValueOnce(new CliError("boom"));
+
+    await expect(
+      createRoot().parseAsync(["node", "test", "--format", "json", "path", "overview"]),
+    ).rejects.toThrow("boom");
+
+    expect(Overview.getOverview).toHaveBeenCalledTimes(1);
+    expect(mockFormatter.output).not.toHaveBeenCalled();
+  });
+
+  it("throws when overview returns empty data", async () => {
+    vi.mocked(Overview.getOverview).mockResolvedValue({
+      data: undefined,
+      error: { message: "no data" },
+      request: new Request("https://api.example.com/path/overview"),
+      response: new Response(),
+    });
+
+    await expect(
+      createRoot().parseAsync(["node", "test", "--format", "json", "path", "overview"]),
+    ).rejects.toThrow("No overview data returned");
+
+    expect(Overview.getOverview).toHaveBeenCalledTimes(1);
+    expect(mockFormatter.output).not.toHaveBeenCalled();
   });
 
   it("forwards timezone to overview stats", async () => {
@@ -100,5 +140,33 @@ describe("path overview commands", () => {
     expect(Overview.getStats).toHaveBeenCalledWith({
       query: { timeZone: "Asia/Seoul" },
     });
+  });
+
+  it("runs overview stats without timezone", async () => {
+    vi.mocked(Overview.getStats).mockResolvedValue({
+      data: {
+        latestTrend: [],
+        newPeopleThisMonth: 0,
+        topChannels: [],
+        totalChannels: 0,
+        totalCompanies: 0,
+        totalEvents: 0,
+        totalPeople: 0,
+      },
+    } as any);
+
+    await createRoot().parseAsync([
+      "node",
+      "test",
+      "--format",
+      "json",
+      "path",
+      "overview",
+      "stats",
+    ]);
+
+    expect(sharedModule.requireAuth).toHaveBeenCalledTimes(1);
+    expect(Overview.getStats).toHaveBeenCalledWith({ query: { timeZone: undefined } });
+    expect(mockFormatter.output).toHaveBeenCalledTimes(1);
   });
 });

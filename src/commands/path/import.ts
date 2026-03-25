@@ -188,7 +188,14 @@ export function createImportCommand(dependencies: ImportCommandDependencies = {}
       let fileBuffer: Buffer;
       try {
         fileBuffer = readFileSync(analyzeOptions.file);
-      } catch {
+      } catch (error) {
+        const errno = (error as NodeJS.ErrnoException).code;
+        if (errno === "ENOENT") {
+          throw new UsageError(`File not found: ${analyzeOptions.file}`);
+        }
+        if (errno === "EACCES") {
+          throw new UsageError(`Permission denied: ${analyzeOptions.file}`);
+        }
         throw new UsageError(`Cannot read file: ${analyzeOptions.file}`);
       }
       const blob = new Blob([fileBuffer], { type: "text/csv" });
@@ -214,7 +221,17 @@ export function createImportCommand(dependencies: ImportCommandDependencies = {}
         path: { id },
         parseAs: "stream",
       });
-      writeStdout(await response.text());
+      if (!response.ok) {
+        throw new UsageError(`Failed to export CSV: ${response.statusText} (${response.status})`);
+      }
+      try {
+        const csv = await response.text();
+        writeStdout(csv);
+      } catch (error) {
+        throw new UsageError(
+          `Failed to read CSV stream: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     });
 
   return command;

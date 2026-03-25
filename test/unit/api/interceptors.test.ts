@@ -1,4 +1,5 @@
 import { type Mock, beforeEach, describe, expect, it, vi } from "vitest";
+import { CliError, ForbiddenError, NotFoundError } from "../../../src/errors/index.js";
 
 let responseInterceptor: (response: Response, request: Request) => Promise<Response>;
 
@@ -26,17 +27,6 @@ vi.mock("../../../src/api/generated/path/client.gen.js", () => ({
       },
     },
   },
-}));
-
-vi.mock("../../../src/errors/index.js", () => ({
-  CliError: class CliError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "CliError";
-    }
-  },
-  isProblemDetail: () => false,
-  parseProblemDetail: vi.fn(),
 }));
 
 import { configureClients } from "../../../src/api/interceptors.js";
@@ -124,6 +114,22 @@ describe("interceptors token refresh concurrency", () => {
     await expect(p2).rejects.toThrow("Request failed with status 401");
   });
 
+  it("writes warning to stderr when refresh throws and returns original response", async () => {
+    const stderrWrite = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+    refreshFn.mockRejectedValueOnce(new Error("refresh failed"));
+
+    try {
+      const result = await responseInterceptor(make401(), makeRequest());
+
+      expect(result.status).toBe(401);
+      expect(stderrWrite).toHaveBeenCalledWith(
+        "Warning: token refresh failed, returning original 401 response\n",
+      );
+    } finally {
+      stderrWrite.mockRestore();
+    }
+  });
+
   it("successful refresh shared across waiters", async () => {
     let resolveRefresh!: (value: boolean) => void;
     refreshFn.mockImplementation(
@@ -145,5 +151,86 @@ describe("interceptors token refresh concurrency", () => {
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
     expect(authFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws ForbiddenError for 403 ProblemDetail response", async () => {
+    const response = new Response(
+      JSON.stringify({
+        detail: "Forbidden resource",
+        status: 403,
+        title: "Forbidden",
+        type: "https://example.com/problems/forbidden",
+      }),
+      {
+        headers: { "content-type": "application/json" },
+        status: 403,
+      },
+    );
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(
+      ForbiddenError,
+    );
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow(
+      "Forbidden resource",
+    );
+  });
+
+  it("throws generic CliError for 429 with Retry-After header", async () => {
+    const response = new Response(JSON.stringify({ message: "Too many requests" }), {
+      headers: {
+        "content-type": "application/json",
+        "retry-after": "120",
+      },
+      status: 429,
+    });
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(CliError);
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow(
+      "Request failed with status 429",
+    );
+  });
+
+  it("throws generic CliError for 500 response", async () => {
+    const response = new Response("Internal server error", {
+      headers: { "content-type": "text/plain" },
+      status: 500,
+    });
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(CliError);
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow(
+      "Request failed with status 500",
+    );
+  });
+
+  it("throws generic CliError for non-JSON error body", async () => {
+    const response = new Response("<html>bad gateway</html>", {
+      headers: { "content-type": "text/html" },
+      status: 502,
+    });
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(CliError);
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow(
+      "Request failed with status 502",
+    );
+  });
+
+  it("parses ProblemDetail JSON into typed errors", async () => {
+    const response = new Response(
+      JSON.stringify({
+        detail: "Path missing",
+        status: 404,
+        title: "Not Found",
+        type: "https://example.com/problems/not-found",
+      }),
+      {
+        headers: { "content-type": "application/json" },
+        status: 404,
+      },
+    );
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow("Path missing");
   });
 });

@@ -103,11 +103,35 @@ describe("withRetry", () => {
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
-  it("non-retryable error throws immediately", async () => {
-    const abortError = new DOMException("The operation was aborted", "AbortError");
-    const fn = vi.fn().mockRejectedValueOnce(abortError);
+  it("DOMException TimeoutError retries", async () => {
+    const timeoutError = new DOMException("signal timed out", "TimeoutError");
+    const fn = vi.fn().mockRejectedValueOnce(timeoutError).mockResolvedValueOnce(makeResponse(200));
 
-    await expect(withRetry(fn)).rejects.toThrow("The operation was aborted");
+    const promise = withRetry(fn, { baseDelayMs: 1000 });
+    await vi.advanceTimersByTimeAsync(1000);
+    const result = await promise;
+
+    expect(result.status).toBe(200);
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it("DOMException AbortError retries", async () => {
+    const abortError = new DOMException("The operation was aborted", "AbortError");
+    const fn = vi.fn().mockRejectedValueOnce(abortError).mockResolvedValueOnce(makeResponse(200));
+
+    const promise = withRetry(fn, { baseDelayMs: 1000 });
+    await vi.advanceTimersByTimeAsync(1000);
+    const result = await promise;
+
+    expect(result.status).toBe(200);
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it("DOMException with other name throws immediately", async () => {
+    const otherError = new DOMException("Some other error", "NotSupportedError");
+    const fn = vi.fn().mockRejectedValueOnce(otherError);
+
+    await expect(withRetry(fn)).rejects.toThrow("Some other error");
     expect(fn).toHaveBeenCalledTimes(1);
   });
 

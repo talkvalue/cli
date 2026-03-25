@@ -23,6 +23,7 @@ function parseFallbackStore(content: string): StoredCredentials {
   try {
     parsed = JSON.parse(content);
   } catch {
+    process.stderr.write("Warning: credential store corrupted, credentials cleared\n");
     return {};
   }
 

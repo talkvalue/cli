@@ -15,7 +15,13 @@ function parseRetryAfter(response: Response): number | undefined {
 }
 
 function isRetryableError(error: unknown): boolean {
-  return error instanceof TypeError;
+  if (error instanceof TypeError) {
+    return true;
+  }
+  if (error instanceof DOMException) {
+    return error.name === "TimeoutError" || error.name === "AbortError";
+  }
+  return false;
 }
 
 export async function withRetry(

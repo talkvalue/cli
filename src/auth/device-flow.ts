@@ -11,6 +11,7 @@ const REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
 const JSON_CONTENT_TYPE = "application/json";
 const FORM_URLENCODED = "application/x-www-form-urlencoded";
 const SLOW_DOWN_SECONDS = 5;
+const MAX_POLL_DURATION_MS = 15 * 60 * 1000;
 
 interface DeviceAuthorizationResponse {
   device_code: string;
@@ -175,9 +176,11 @@ export const pollForToken = async (params: PollForTokenParams): Promise<TokenRes
   const base = params.apiBaseUrl ?? WORKOS_API_BASE;
   let intervalSeconds = params.intervalSeconds;
   const deadline =
-    params.expiresInSeconds !== undefined ? Date.now() + params.expiresInSeconds * 1000 : undefined;
+    params.expiresInSeconds !== undefined
+      ? Date.now() + params.expiresInSeconds * 1000
+      : Date.now() + MAX_POLL_DURATION_MS;
 
-  while (deadline === undefined || Date.now() < deadline) {
+  while (Date.now() < deadline) {
     const response = await fetch(getEndpoint(base, TOKEN_PATH), {
       body: new URLSearchParams({
         client_id: params.clientId,

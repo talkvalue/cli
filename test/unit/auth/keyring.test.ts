@@ -132,4 +132,26 @@ describe("keyring store", () => {
       "talkvalue:dev:id_token": "second-token",
     });
   });
+
+  it("warns and clears credentials when fallback store is corrupted", async () => {
+    keyringAvailable = false;
+    const stderrWrite = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+    const { KEYRING_FALLBACK_FILE_NAME, getCredential } = await import(
+      "../../../src/auth/keyring.js"
+    );
+    const { ensureConfigDir, getConfigDir } = await import("../../../src/config/paths.js");
+    const { writeFile } = await import("node:fs/promises");
+
+    await ensureConfigDir();
+    const fallbackPath = join(getConfigDir(), KEYRING_FALLBACK_FILE_NAME);
+    await writeFile(fallbackPath, "{bad json", "utf8");
+
+    const credential = await getCredential("talkvalue:dev:access_token");
+
+    expect(credential).toBeUndefined();
+    expect(stderrWrite).toHaveBeenCalledWith(
+      "Warning: credential store corrupted, credentials cleared\n",
+    );
+    stderrWrite.mockRestore();
+  });
 });

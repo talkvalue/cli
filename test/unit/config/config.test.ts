@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { access, mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -138,5 +138,25 @@ describe("config manager", () => {
   it("creates default config with version 1", async () => {
     const config = await loadConfig();
     expect(config.version).toBe(1);
+  });
+
+  it("creates backup when config file is corrupted", async () => {
+    await ensureConfigDir();
+    const configPath = getConfigFilePath();
+    await writeFile(configPath, "invalid: yaml: content: [", "utf8");
+
+    const config = await loadConfig();
+
+    expect(config).toEqual({
+      active_profile: "",
+      api_url: "https://api.trytalkvalue.com",
+      client_id: "client_01KCTNX7YWPXTWN1AAY74TQC14",
+      profiles: {},
+      version: 1,
+    });
+
+    const backupPath = `${configPath}.bak`;
+    const backupContent = await readFile(backupPath, "utf8");
+    expect(backupContent).toBe("invalid: yaml: content: [");
   });
 });

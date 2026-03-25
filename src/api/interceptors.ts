@@ -63,6 +63,7 @@ export function configureClients(options: {
             }
           }
         } catch {
+          process.stderr.write("Warning: token refresh failed, returning original 401 response\n");
           return response; // Refresh failed — return original 401
         }
       }

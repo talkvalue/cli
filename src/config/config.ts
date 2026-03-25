@@ -1,4 +1,4 @@
-import { chmod, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { chmod, copyFile, readFile, rename, unlink, writeFile } from "node:fs/promises";
 
 import YAML from "yaml";
 
@@ -116,7 +116,11 @@ export async function loadConfig(): Promise<Config> {
       await saveConfig(defaultConfig);
       return defaultConfig;
     }
-    process.stderr.write("Warning: config file is corrupted, using defaults\n");
+    const backupPath = `${configFilePath}.bak`;
+    await copyFile(configFilePath, backupPath).catch(() => undefined);
+    process.stderr.write(
+      `Warning: config file is corrupted, using defaults. Backup saved to ${backupPath}\n`,
+    );
     return normalizeConfig({});
   }
 }

@@ -247,7 +247,7 @@ describe("createImportCommand", () => {
     const harness = createHarness();
     vi.mocked(BulkImport.exportFailedRowsCsv).mockResolvedValueOnce({
       data: undefined,
-      response: { text: async () => "row,error\n1,invalid email\n" } as any,
+      response: { ok: true, text: async () => "row,error\n1,invalid email\n" } as any,
     } as any);
 
     await harness.run(["failed-export", "99"]);
@@ -259,5 +259,71 @@ describe("createImportCommand", () => {
     expect(harness.writeStdout).toHaveBeenCalledWith("row,error\n1,invalid email\n");
     expect(harness.formatter.output).not.toHaveBeenCalled();
     expect(harness.formatter.list).not.toHaveBeenCalled();
+  });
+
+  it("failed-export throws UsageError when response not ok", async () => {
+    const harness = createHarness();
+    vi.mocked(BulkImport.exportFailedRowsCsv).mockResolvedValueOnce({
+      data: undefined,
+      response: { ok: false, status: 500, statusText: "Internal Server Error" } as any,
+    } as any);
+
+    await expect(harness.run(["failed-export", "99"])).rejects.toBeInstanceOf(UsageError);
+    expect(harness.writeStdout).not.toHaveBeenCalled();
+  });
+
+  it("failed-export throws UsageError when response.text() fails", async () => {
+    const harness = createHarness();
+    vi.mocked(BulkImport.exportFailedRowsCsv).mockResolvedValueOnce({
+      data: undefined,
+      response: {
+        ok: true,
+        text: async () => {
+          throw new Error("Stream read failed");
+        },
+      } as any,
+    } as any);
+
+    await expect(harness.run(["failed-export", "99"])).rejects.toBeInstanceOf(UsageError);
+    expect(harness.writeStdout).not.toHaveBeenCalled();
+  });
+
+  it("analyze throws UsageError with 'File not found' for ENOENT", async () => {
+    const harness = createHarness();
+    const enoentError = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException;
+    enoentError.code = "ENOENT";
+    vi.mocked(readFileSync).mockImplementationOnce(() => {
+      throw enoentError;
+    });
+
+    await expect(harness.run(["analyze", "--file", "./missing.csv"])).rejects.toBeInstanceOf(
+      UsageError,
+    );
+  });
+
+  it("analyze throws UsageError with 'Permission denied' for EACCES", async () => {
+    const harness = createHarness();
+    const eacceError = new Error("EACCES: permission denied") as NodeJS.ErrnoException;
+    eacceError.code = "EACCES";
+    vi.mocked(readFileSync).mockImplementationOnce(() => {
+      throw eacceError;
+    });
+
+    await expect(harness.run(["analyze", "--file", "./restricted.csv"])).rejects.toBeInstanceOf(
+      UsageError,
+    );
+  });
+
+  it("analyze throws UsageError with generic message for other errors", async () => {
+    const harness = createHarness();
+    const otherError = new Error("Some other error") as NodeJS.ErrnoException;
+    otherError.code = "EISDIR";
+    vi.mocked(readFileSync).mockImplementationOnce(() => {
+      throw otherError;
+    });
+
+    await expect(harness.run(["analyze", "--file", "./dir.csv"])).rejects.toBeInstanceOf(
+      UsageError,
+    );
   });
 });

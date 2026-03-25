@@ -29,6 +29,15 @@ export function createProgram(): Command {
 export async function main(argv = process.argv): Promise<void> {
   const program = createProgram();
 
+  process.on("SIGINT", () => {
+    process.exitCode = 130;
+    process.exit();
+  });
+  process.on("SIGTERM", () => {
+    process.exitCode = 143;
+    process.exit();
+  });
+
   try {
     await program.parseAsync(argv);
   } catch (error) {

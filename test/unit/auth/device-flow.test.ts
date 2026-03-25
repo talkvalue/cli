@@ -330,6 +330,28 @@ describe("pollForToken", () => {
       }),
     ).rejects.toBeInstanceOf(AuthError);
   });
+
+  it("uses MAX_POLL_DURATION_MS as deadline when expiresInSeconds is undefined", async () => {
+    const fetchMock = vi.mocked(fetch);
+    const sleep = vi.fn(async (_ms: number) => Promise.resolve());
+
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ error: "authorization_pending" }), {
+        headers: { "content-type": "application/json" },
+        status: 400,
+      }),
+    );
+
+    const pollPromise = pollForToken({
+      clientId: "client_123",
+      deviceCode: "device_123",
+      intervalSeconds: 2,
+      sleep,
+    });
+
+    await expect(pollPromise).rejects.toBeInstanceOf(AuthError);
+    expect(fetchMock).toHaveBeenCalled();
+  });
 });
 
 describe("openVerificationUri", () => {
