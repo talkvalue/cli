@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/talkvalue/cli/compare/v1.3.0...v1.3.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* harden error handling, add pre-commit hooks, and expand test coverage ([94e4ca3](https://github.com/talkvalue/cli/commit/94e4ca3764140b912adf053dc1575658ce2d2c22))
+
 ## [1.3.0](https://github.com/talkvalue/cli/compare/v1.2.2...v1.3.0) (2026-03-25)
 
 
