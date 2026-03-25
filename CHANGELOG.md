@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/talkvalue/cli/compare/v1.2.2...v1.3.0) (2026-03-25)
+
+
+### Features
+
+* add agent skills and update README ([97a3971](https://github.com/talkvalue/cli/commit/97a3971511ed45fd7f289a9f578b963658b91e01))
+
+
+### Bug Fixes
+
+* add missing query params to channel people and person list commands ([601a108](https://github.com/talkvalue/cli/commit/601a108dd7af42ea6e6578509c4502f4f1898cf3))
+
 ## [1.2.2](https://github.com/talkvalue/cli/compare/v1.2.1...v1.2.2) (2026-03-25)
 
 
