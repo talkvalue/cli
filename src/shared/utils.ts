@@ -1,4 +1,4 @@
-import { UsageError } from "../errors/index.js";
+import { InvalidArgumentError } from "commander";
 import type { OutputContext } from "../output/index.js";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -8,7 +8,7 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 export function parseNumericId(value: string, fieldName: string): number {
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${fieldName}: ${value}`);
+    throw new InvalidArgumentError(`Invalid ${fieldName}: ${value}`);
   }
   return parsed;
 }
@@ -16,7 +16,7 @@ export function parseNumericId(value: string, fieldName: string): number {
 export function parseInteger(value: string, label: string): number {
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) {
-    throw new UsageError(`Invalid ${label}: not a number`);
+    throw new InvalidArgumentError(`Invalid ${label}: not a number`);
   }
   return parsed;
 }

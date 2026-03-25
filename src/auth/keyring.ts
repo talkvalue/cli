@@ -74,6 +74,7 @@ async function probeBackend(): Promise<StorageBackend> {
     await probe.getPassword();
     return "keyring";
   } catch {
+    process.stderr.write("Warning: keyring unavailable, using file storage\n");
     return "file";
   }
 }

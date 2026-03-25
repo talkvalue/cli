@@ -1,3 +1,4 @@
+import { isRecord } from "../shared/utils.js";
 import { AuthError, CliError, ForbiddenError, NotFoundError } from "./cli-error.js";
 
 const AUTH_ERROR_CODE_MAX = 1500;
@@ -11,16 +12,12 @@ export interface ProblemDetail {
   messageKey?: string;
 }
 
-const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
-
 const isInRange = (value: number, min: number, max: number): boolean => {
   return value >= min && value <= max;
 };
 
 export const isProblemDetail = (body: unknown): body is ProblemDetail => {
-  if (!isObjectRecord(body)) {
+  if (!isRecord(body)) {
     return false;
   }
 

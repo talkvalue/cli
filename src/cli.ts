@@ -32,19 +32,22 @@ export async function main(argv = process.argv): Promise<void> {
   try {
     await program.parseAsync(argv);
   } catch (error) {
-    const opts = program.opts<{ format?: string; json?: boolean }>();
-    const format = detectFormat(opts.json ? "json" : opts.format);
-    const formatter = createFormatter(format);
-    const output = {};
+    let formatter: ReturnType<typeof createFormatter>;
+    try {
+      const opts = program.opts<{ format?: string; json?: boolean }>();
+      formatter = createFormatter(detectFormat(opts.json ? "json" : opts.format));
+    } catch {
+      formatter = createFormatter("json");
+    }
 
     if (error instanceof CliError) {
-      formatter.error(error, output);
+      formatter.error(error, {});
       process.exitCode = error.exitCode;
       return;
     }
 
     const unknownError = error instanceof Error ? error : new Error("Unknown CLI error");
-    formatter.error(unknownError, output);
+    formatter.error(unknownError, {});
     process.exitCode = 1;
   }
 }

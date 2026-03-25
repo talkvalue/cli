@@ -81,8 +81,36 @@ export async function resolveCommandContext(command: Command): Promise<CommandCo
 }
 
 export async function ensureAuth(command: Command): Promise<void> {
-  const context = await resolveCommandContext(command);
-  await requireAuth(context);
+  const config = await loadConfig();
+  const env = resolveEnv();
+  const commandOptions = command.optsWithGlobals<CommandGlobalOptions>();
+  const profile = resolveProfile(commandOptions, env, config);
+  const baseUrl = resolveBaseUrl(commandOptions, env, config);
+
+  configureClients({
+    baseUrl,
+    auth: async () => env.token ?? (profile ? await getAccessToken(profile) : undefined),
+    onRefreshToken: profile
+      ? createStoredTokenRefreshHandler({
+          authApiUrl: env.authApiUrl,
+          clientId: config.client_id,
+          env,
+          organizationId: config.profiles[profile]?.org_id,
+          profile,
+        })
+      : undefined,
+  });
+
+  if (!env.token && profile.length === 0) {
+    throw new AuthError("Not logged in. Run 'talkvalue auth login' to authenticate.");
+  }
+
+  if (!env.token && profile.length > 0) {
+    const token = await getAccessToken(profile);
+    if (!token) {
+      throw new AuthError("Session expired. Run 'talkvalue auth login' to re-authenticate.");
+    }
+  }
 }
 
 export function resolveFormatter(

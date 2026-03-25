@@ -1,6 +1,6 @@
 # TalkValue CLI
 
-Manage your contacts, channels, events, and companies.
+Command-line interface for TalkValue Path — manage contacts, channels, events, companies, and analytics.
 
 ## Install
 
@@ -10,104 +10,55 @@ npm i -g @talkvalue/cli
 
 Requires Node.js >= 24.
 
-## Auth
+## Quick Start
 
 ```bash
-talkvalue auth login               # browser-based login + org selection
-talkvalue auth status              # current session
-talkvalue auth switch [org]        # switch organization
-talkvalue auth list                # list profiles
-talkvalue auth logout              # remove profile
+talkvalue auth login
+talkvalue path person list
+talkvalue path event person list 16 --sort joinedAt:desc --format json
 ```
 
-For CI/agents, set `TALKVALUE_TOKEN`:
-
-```bash
-TALKVALUE_TOKEN="eyJ..." talkvalue path person list
-```
+For CI/agents, set `TALKVALUE_TOKEN` to skip interactive login.
 
 ## Commands
 
-```bash
-talkvalue path overview                                    # dashboard
-talkvalue path overview stats                              # detailed stats
+Use `talkvalue [command] --help` for full usage of any command.
 
-# People
-talkvalue path person list                                 # list people
-talkvalue path person list --event-id 16 --sort joinedAt:desc
-talkvalue path person get <id>
-talkvalue path person update <id> --first-name "…" --last-name "…"
-talkvalue path person delete <id> --confirm
-talkvalue path person merge <sourceId> <targetId> --confirm
-talkvalue path person merge-undo <mergeOperationId> --confirm
-talkvalue path person activity <personId>
-talkvalue path person export                               # CSV export
-
-# Events
-talkvalue path event list
-talkvalue path event get <id>
-talkvalue path event create --name "…" --start-at "…" --time-zone "…"
-talkvalue path event update <id> --name "…"
-talkvalue path event delete <id> --confirm
-talkvalue path event person list <eventId>
-talkvalue path event person add <eventId> --email "…"
-talkvalue path event person export <eventId>
-
-# Channels
-talkvalue path channel list
-talkvalue path channel create --name "…"
-talkvalue path channel get <id>
-talkvalue path channel update <id> --name "…" --icon "…" --color "…"
-talkvalue path channel delete <id> --confirm
-talkvalue path channel people <channelId>
-talkvalue path channel add-person <channelId> --email "…"
-talkvalue path channel export <channelId>
-
-# Companies
-talkvalue path company list
-talkvalue path company get <id>
-talkvalue path company update <id> --display-name "…"
-talkvalue path company person list <companyId>
-talkvalue path company person export <companyId>
-
-# Analysis
-talkvalue path analysis channel attribution <channelId> --event-id <id>
-talkvalue path analysis channel audience --channel-id <id> --channel-id <id>
-talkvalue path analysis event insights
-talkvalue path analysis event trend
-
-# Import
-talkvalue path import list
-talkvalue path import get <id>
-talkvalue path import create --file-key "…" --source-id <n> --mode UPDATE --mapping 0:EMAIL
-talkvalue path import analyze --file ./data.csv
-talkvalue path import failed-export <id>
-
-talkvalue version
-```
+| Command | Description |
+|---------|-------------|
+| `auth login` | Browser-based login with org selection |
+| `auth status` | Show current session |
+| `auth switch` | Switch organization |
+| `auth list` | List all profiles |
+| `auth logout` | Remove profile and credentials |
+| `path overview` | Dashboard summary and stats |
+| `path person` | List, get, update, delete, merge, export people |
+| `path event` | Manage events and event participants |
+| `path channel` | Manage channels and channel members |
+| `path company` | List, get, update companies and company members |
+| `path analysis` | Channel attribution, audience overlap, event trends |
+| `path import` | Analyze CSV, create import jobs, export failures |
+| `version` | Show CLI version |
 
 ## Flags
 
-```
---format <json|table|csv>   output format (default: table for TTY, json for pipe)
---json                      shorthand for --format json
---profile <name>            use specific profile
---no-color                  disable colored output
-```
+| Flag | Description |
+|------|-------------|
+| `--format <json\|table\|csv>` | Output format (default: table for TTY, json for pipe) |
+| `--json` | Shorthand for `--format json` |
+| `--profile <name>` | Use a specific profile |
+| `--no-color` | Disable colored output |
 
-`--page`, `--page-size`, and `--sort` are available on list subcommands.
+`--page` and `--page-size` are available on list subcommands. `--sort` is available on person and event person lists.
 
 ## Output
 
+Data goes to stdout, errors go to stderr.
+
 ```jsonc
-// Success
-{ "data": { ... } }
-
-// List (paginated)
-{ "data": [...], "pagination": { "page": 0, "pageSize": 20, "totalElements": 100, "totalPages": 5 } }
-
-// Error (stderr)
-{ "error": { "message": "..." } }
+{ "data": { ... } }                    // single resource
+{ "data": [...], "pagination": {...} }  // paginated list
+{ "error": { "message": "..." } }      // error (stderr)
 ```
 
 Exit codes: `0` success · `1` error · `2` usage · `3` auth · `4` not-found · `5` forbidden

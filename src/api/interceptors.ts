@@ -53,9 +53,13 @@ export function configureClients(options: {
                 headers: new Headers(request.headers),
               });
               retryRequest.headers.set("Authorization", `Bearer ${newToken}`);
-              return withRetry(() =>
+              const retryResponse = await withRetry(() =>
                 fetch(retryRequest, { signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) }),
               );
+              if (!retryResponse.ok) {
+                throw new CliError(`Request failed with status ${retryResponse.status}`);
+              }
+              return retryResponse;
             }
           }
         } catch {
