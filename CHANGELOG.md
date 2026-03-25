@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/talkvalue/cli/compare/v1.2.0...v1.2.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* harden interceptor, extract shared utils, remove dead code, add missing tests ([00556f4](https://github.com/talkvalue/cli/commit/00556f401943bfb7a6c70e680da0cb9559a56a62))
+
 ## [1.2.0](https://github.com/talkvalue/cli/compare/v1.1.2...v1.2.0) (2026-03-25)
 
 
