@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 
 import { Command } from "commander";
 
@@ -198,10 +199,10 @@ export function createImportCommand(dependencies: ImportCommandDependencies = {}
         }
         throw new UsageError(`Cannot read file: ${analyzeOptions.file}`);
       }
-      const blob = new Blob([fileBuffer], { type: "text/csv" });
+      const file = new File([fileBuffer], basename(analyzeOptions.file), { type: "text/csv" });
 
       const { data: result } = await BulkImport.analyzeImport({
-        body: { file: blob },
+        body: { file },
       });
       formatter.output(toOutputRecord(unwrap(result, "analyze")), toOutputContext());
     });

@@ -1,4 +1,5 @@
 import { CliError, isProblemDetail, parseProblemDetail } from "../errors/index.js";
+import { isRecord } from "../shared/utils.js";
 import { DEFAULT_TIMEOUT_MS, USER_AGENT } from "./constants.js";
 import { client as authClient } from "./generated/auth/client.gen.js";
 import { client as pathClient } from "./generated/path/client.gen.js";
@@ -70,11 +71,17 @@ export function configureClients(options: {
 
       if (!response.ok) {
         const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
+        if (
+          contentType?.includes("application/json") ||
+          contentType?.includes("application/problem+json")
+        ) {
           try {
             const body = await response.clone().json();
             if (isProblemDetail(body)) {
               throw parseProblemDetail(body);
+            }
+            if (isRecord(body) && typeof body.detail === "string") {
+              throw new CliError(body.detail);
             }
           } catch (error) {
             if (error instanceof CliError) throw error;

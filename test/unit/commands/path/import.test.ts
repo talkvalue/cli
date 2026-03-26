@@ -231,8 +231,10 @@ describe("createImportCommand", () => {
 
     expect(readFileSync).toHaveBeenCalledWith("./contacts.csv");
     expect(BulkImport.analyzeImport).toHaveBeenCalledWith({
-      body: { file: expect.any(Blob) },
+      body: { file: expect.any(File) },
     });
+    const actualFile = vi.mocked(BulkImport.analyzeImport).mock.calls[0][0]?.body.file as File;
+    expect(actualFile.name).toBe("contacts.csv");
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 

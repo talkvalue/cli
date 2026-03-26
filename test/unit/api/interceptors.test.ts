@@ -214,6 +214,49 @@ describe("interceptors token refresh concurrency", () => {
     );
   });
 
+  it("parses ProblemDetail with application/problem+json content type", async () => {
+    const response = new Response(
+      JSON.stringify({
+        detail: "Resource not found",
+        status: 404,
+        title: "Not Found",
+        type: "https://example.com/problems/not-found",
+      }),
+      {
+        headers: { "content-type": "application/problem+json" },
+        status: 404,
+      },
+    );
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow(
+      "Resource not found",
+    );
+  });
+
+  it("uses detail field as error message for partial ProblemDetail", async () => {
+    const response = new Response(
+      JSON.stringify({
+        detail: "error.import_file_invalid_format",
+        instance: "/path/import/analyze",
+        status: 400,
+        title: "Bad Request",
+        errorCode: -1,
+      }),
+      {
+        headers: { "content-type": "application/problem+json" },
+        status: 400,
+      },
+    );
+
+    await expect(responseInterceptor(response, makeRequest())).rejects.toBeInstanceOf(CliError);
+    await expect(responseInterceptor(response, makeRequest())).rejects.toThrow(
+      "error.import_file_invalid_format",
+    );
+  });
+
   it("parses ProblemDetail JSON into typed errors", async () => {
     const response = new Response(
       JSON.stringify({
