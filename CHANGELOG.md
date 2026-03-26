@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/talkvalue/cli/compare/v1.4.0...v1.4.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* use File instead of Blob for CSV import and handle problem+json errors ([a3eb2f8](https://github.com/talkvalue/cli/commit/a3eb2f82f1ed1cf1115754551190d87bcdfb6421))
+
 ## [1.4.0](https://github.com/talkvalue/cli/compare/v1.3.1...v1.4.0) (2026-03-25)
 
 
