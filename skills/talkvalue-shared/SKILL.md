@@ -69,6 +69,7 @@ talkvalue path <resource> <action> [arguments] [flags]
 | `TALKVALUE_PROFILE` | Active profile override |
 | `NO_COLOR` | Disable colored output |
 | `FORCE_COLOR` | Force colored output |
+| `NO_UPDATE_NOTIFIER` | Suppress the passive "newer version available" notice (also disabled automatically in CI, with `--json`, on the `update`/`version` subcommands, and when `NODE_ENV=test`) |
 
 ## Output Format
 
@@ -142,8 +143,13 @@ talkvalue config list
 - **Always** confirm with the user before executing delete or merge commands
 - Use `--confirm` flag for destructive operations — the CLI requires it
 
-## Version
+## Version and updates
 
 ```bash
 talkvalue version   # → { version, nodeVersion, platform }
+talkvalue update    # → { current, latest, outdated, installCommand } from npm registry
 ```
+
+`talkvalue update` only checks; it does not install. The `installCommand` field auto-detects the package manager that invoked the CLI (`npm`, `pnpm`, `yarn`, or `bun` via `npm_config_user_agent`); fall back to `npm install -g @talkvalue/cli@latest` when running the bin directly. Comparison uses `semver.gt`, so pre-release builds (`1.5.0-rc.1`) and local dev installs are never falsely marked outdated.
+
+When run from a TTY, the CLI also shows a one-time notification in the next session whenever a newer version is detected. The notice is automatically suppressed for the `update` and `version` subcommands, when the user passes `--json`/`--format json`, in CI environments, when `NODE_ENV=test`, or when `NO_UPDATE_NOTIFIER` is set.

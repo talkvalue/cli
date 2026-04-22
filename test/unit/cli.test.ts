@@ -44,7 +44,7 @@ describe("cli", () => {
     const program = createProgram();
     const names = program.commands.map((command) => command.name());
 
-    expect(names).toEqual(["auth", "path", "config", "version"]);
+    expect(names).toEqual(["auth", "path", "config", "update", "version"]);
   });
 
   it("prints version command output through main", async () => {

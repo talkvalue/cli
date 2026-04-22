@@ -112,6 +112,7 @@ All data commands live under the `path` prefix. Run `talkvalue [command] --help`
 | `path analysis` | Channel attribution, audience overlap, event trends (`--tag-id` filters) |
 | `path import` | Analyze CSV, create import jobs, export failures |
 | `path tag` | Create tags and attach them to channels or events |
+| `update` | Check whether a newer CLI version is available on npm |
 | `version` | Show CLI version |
 
 ### Global Flags
