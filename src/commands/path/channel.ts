@@ -20,12 +20,16 @@ import {
   toOutputRecord,
 } from "../../shared/utils.js";
 
+const formatTagList = (value: unknown): string =>
+  Array.isArray(value) ? (value as Array<{ name: string }>).map((t) => t.name).join(", ") : "";
+
 const CHANNEL_COLUMNS = [
   { header: "ID", key: "id" },
   { header: "Name", key: "name" },
   { header: "Icon", key: "icon" },
   { header: "Color", key: "color" },
   { align: "right" as const, header: "People", key: "peopleCount" },
+  { format: formatTagList, header: "Tags", key: "tags" },
   { header: "Created At", key: "createdAt" },
 ];
 

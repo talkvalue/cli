@@ -90,11 +90,18 @@ describe("createAnalysisCommand", () => {
     vi.clearAllMocks();
   });
 
-  it("channel attribution requires --event-id", async () => {
+  it("channel attribution calls SDK without filters when none given", async () => {
     const harness = createHarness();
+    vi.mocked(Analysis.getChannelEventContribution).mockResolvedValueOnce({
+      data: { channelId: 1, contributions: [] },
+    } as any);
 
-    await expect(harness.run(["channel", "attribution", "1"])).rejects.toBeInstanceOf(UsageError);
-    expect(Analysis.getChannelEventContribution).not.toHaveBeenCalled();
+    await harness.run(["channel", "attribution", "1"]);
+
+    expect(Analysis.getChannelEventContribution).toHaveBeenCalledWith({
+      path: { channelId: 1 },
+      query: {},
+    });
   });
 
   it("channel attribution calls SDK with channelId and eventIds", async () => {
@@ -110,6 +117,20 @@ describe("createAnalysisCommand", () => {
       query: { eventIds: [10, 20] },
     });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("channel attribution forwards --tag-id when provided", async () => {
+    const harness = createHarness();
+    vi.mocked(Analysis.getChannelEventContribution).mockResolvedValueOnce({
+      data: { channelId: 5, contributions: [] },
+    } as any);
+
+    await harness.run(["channel", "attribution", "5", "--tag-id", "3"]);
+
+    expect(Analysis.getChannelEventContribution).toHaveBeenCalledWith({
+      path: { channelId: 5 },
+      query: { tagId: 3 },
+    });
   });
 
   it("channel audience requires 2-5 --channel-id values", async () => {
@@ -159,7 +180,7 @@ describe("createAnalysisCommand", () => {
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
-  it("event insights calls SDK with no params", async () => {
+  it("event insights calls SDK with empty tagId by default", async () => {
     const harness = createHarness();
     vi.mocked(Analysis.getEventInsights).mockResolvedValueOnce({
       data: { signals: [] },
@@ -167,11 +188,26 @@ describe("createAnalysisCommand", () => {
 
     await harness.run(["event", "insights"]);
 
-    expect(Analysis.getEventInsights).toHaveBeenCalledWith();
+    expect(Analysis.getEventInsights).toHaveBeenCalledWith({
+      query: { tagId: undefined },
+    });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
-  it("event trend calls SDK with no params", async () => {
+  it("event insights forwards --tag-id", async () => {
+    const harness = createHarness();
+    vi.mocked(Analysis.getEventInsights).mockResolvedValueOnce({
+      data: { signals: [] },
+    } as any);
+
+    await harness.run(["event", "insights", "--tag-id", "9"]);
+
+    expect(Analysis.getEventInsights).toHaveBeenCalledWith({
+      query: { tagId: 9 },
+    });
+  });
+
+  it("event trend calls SDK with empty tagId by default", async () => {
     const harness = createHarness();
     vi.mocked(Analysis.getEventParticipantTrend).mockResolvedValueOnce({
       data: { trend: [] },
@@ -179,7 +215,22 @@ describe("createAnalysisCommand", () => {
 
     await harness.run(["event", "trend"]);
 
-    expect(Analysis.getEventParticipantTrend).toHaveBeenCalledWith();
+    expect(Analysis.getEventParticipantTrend).toHaveBeenCalledWith({
+      query: { tagId: undefined },
+    });
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("event trend forwards --tag-id", async () => {
+    const harness = createHarness();
+    vi.mocked(Analysis.getEventParticipantTrend).mockResolvedValueOnce({
+      data: { trend: [] },
+    } as any);
+
+    await harness.run(["event", "trend", "--tag-id", "9"]);
+
+    expect(Analysis.getEventParticipantTrend).toHaveBeenCalledWith({
+      query: { tagId: 9 },
+    });
   });
 });

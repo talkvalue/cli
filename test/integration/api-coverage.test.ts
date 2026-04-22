@@ -72,8 +72,12 @@ const ENDPOINT_TO_COMMAND: Record<string, string[]> = {
   ListCompanyPeopleData: ["path", "company", "person", "list"],
   ListCompaniesData: ["path", "company", "list"],
   ListImportJobsData: ["path", "import", "list"],
+  ListTagsData: ["path", "tag", "list"],
   GetActivityData: ["path", "person", "activity"],
+  GetOverviewData: ["path", "overview"],
   GetStatsData: ["path", "overview", "stats"],
+  GetEventInsightsData: ["path", "analysis", "event", "insights"],
+  GetEventParticipantTrendData: ["path", "analysis", "event", "trend"],
   GetChannelEventContributionData: ["path", "analysis", "channel", "attribution"],
   GetChannelOverlapData: ["path", "analysis", "channel", "audience"],
 };
@@ -89,9 +93,16 @@ function findCommand(root: Command, path: string[]): Command | null {
 }
 
 function getRegisteredOptions(cmd: Command): Set<string> {
-  return new Set(
-    cmd.options.map((o) => o.long?.replace(/^--/, "") ?? o.short?.replace(/^-/, "") ?? ""),
-  );
+  const names = new Set<string>();
+  let current: Command | null = cmd;
+  while (current) {
+    for (const o of current.options) {
+      const name = o.long?.replace(/^--/, "") ?? o.short?.replace(/^-/, "") ?? "";
+      if (name) names.add(name);
+    }
+    current = current.parent;
+  }
+  return names;
 }
 
 let _program: Command | null = null;

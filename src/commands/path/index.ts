@@ -7,6 +7,7 @@ import { createEventCommand } from "./event.js";
 import { createImportCommand } from "./import.js";
 import { createOverviewCommand } from "./overview.js";
 import { createPersonCommand } from "./person.js";
+import { createTagCommand } from "./tag.js";
 
 export function createPathCommand(): Command {
   return new Command("path")
@@ -17,5 +18,6 @@ export function createPathCommand(): Command {
     .addCommand(createEventCommand())
     .addCommand(createCompanyCommand())
     .addCommand(createAnalysisCommand())
-    .addCommand(createImportCommand());
+    .addCommand(createImportCommand())
+    .addCommand(createTagCommand());
 }

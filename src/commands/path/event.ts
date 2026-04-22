@@ -69,6 +69,9 @@ interface AddPersonOptions {
   xUrl?: string;
 }
 
+const formatTagList = (value: unknown): string =>
+  Array.isArray(value) ? (value as Array<{ name: string }>).map((t) => t.name).join(", ") : "";
+
 const EVENT_LIST_COLUMNS: ColumnDef[] = [
   { header: "ID", key: "id" },
   { header: "Name", key: "name" },
@@ -76,6 +79,7 @@ const EVENT_LIST_COLUMNS: ColumnDef[] = [
   { header: "Start At", key: "startAt" },
   { header: "Location", key: "location" },
   { align: "right" as const, header: "People", key: "peopleCount" },
+  { format: formatTagList, header: "Tags", key: "tags" },
   { header: "Created At", key: "createdAt" },
 ];
 

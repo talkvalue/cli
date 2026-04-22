@@ -69,8 +69,37 @@ describe("path overview commands", () => {
     await createRoot().parseAsync(["node", "test", "--format", "json", "path", "overview"]);
 
     expect(sharedModule.requireAuth).toHaveBeenCalledTimes(1);
-    expect(Overview.getOverview).toHaveBeenCalledTimes(1);
+    expect(Overview.getOverview).toHaveBeenCalledWith({
+      query: { tagId: undefined, timeZone: undefined },
+    });
     expect(mockFormatter.output).toHaveBeenCalledTimes(1);
+  });
+
+  it("forwards --timezone and --tag-id to overview", async () => {
+    vi.mocked(Overview.getOverview).mockResolvedValue({
+      data: {
+        channelCount: 0,
+        eventCount: 0,
+        peopleCount: 0,
+      },
+    } as any);
+
+    await createRoot().parseAsync([
+      "node",
+      "test",
+      "--format",
+      "json",
+      "path",
+      "overview",
+      "--timezone",
+      "Asia/Seoul",
+      "--tag-id",
+      "7",
+    ]);
+
+    expect(Overview.getOverview).toHaveBeenCalledWith({
+      query: { tagId: 7, timeZone: "Asia/Seoul" },
+    });
   });
 
   it("requires auth before running overview", async () => {

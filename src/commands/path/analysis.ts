@@ -25,21 +25,27 @@ export function createAnalysisCommand(dependencies: AnalysisCommandDependencies 
     .command("attribution")
     .description("Analyze channel-event attribution")
     .argument("<channelId>", "channel ID to analyze")
-    .requiredOption("--event-id <id>", "event ID (repeatable)", collectNumericValues, [])
-    .action(async (rawChannelId: string, options: { eventId: number[] }, command: Command) => {
-      if (options.eventId.length === 0) {
-        throw new UsageError("At least one --event-id is required");
-      }
-
-      const formatter = resolveFormatter(command, dependencies);
-      await ensureAuth(command);
-      const channelId = parseNumericId(rawChannelId, "channel ID");
-      const { data } = await Analysis.getChannelEventContribution({
-        path: { channelId },
-        query: { eventIds: options.eventId },
-      });
-      formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
-    });
+    .option("--event-id <id>", "event ID (repeatable)", collectNumericValues, [])
+    .option("--tag-id <id>", "filter events by tag id", (v: string) => parseNumericId(v, "tag-id"))
+    .action(
+      async (
+        rawChannelId: string,
+        options: { eventId: number[]; tagId?: number },
+        command: Command,
+      ) => {
+        const formatter = resolveFormatter(command, dependencies);
+        await ensureAuth(command);
+        const channelId = parseNumericId(rawChannelId, "channel ID");
+        const { data } = await Analysis.getChannelEventContribution({
+          path: { channelId },
+          query: {
+            ...(options.eventId.length > 0 ? { eventIds: options.eventId } : {}),
+            ...(options.tagId !== undefined ? { tagId: options.tagId } : {}),
+          },
+        });
+        formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
+      },
+    );
 
   channelCommand
     .command("audience")
@@ -70,20 +76,26 @@ export function createAnalysisCommand(dependencies: AnalysisCommandDependencies 
   eventCommand
     .command("insights")
     .description("Get event insight signals")
-    .action(async (_options: unknown, command: Command) => {
+    .option("--tag-id <id>", "filter events by tag id", (v: string) => parseNumericId(v, "tag-id"))
+    .action(async (options: { tagId?: number }, command: Command) => {
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
-      const { data } = await Analysis.getEventInsights();
+      const { data } = await Analysis.getEventInsights({
+        query: { tagId: options.tagId },
+      });
       formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
     });
 
   eventCommand
     .command("trend")
     .description("Get event participant registration trend")
-    .action(async (_options: unknown, command: Command) => {
+    .option("--tag-id <id>", "filter events by tag id", (v: string) => parseNumericId(v, "tag-id"))
+    .action(async (options: { tagId?: number }, command: Command) => {
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
-      const { data } = await Analysis.getEventParticipantTrend();
+      const { data } = await Analysis.getEventParticipantTrend({
+        query: { tagId: options.tagId },
+      });
       formatter.output(toOutputRecord(unwrap(data, "result")), toOutputContext());
     });
 
