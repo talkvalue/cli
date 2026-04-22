@@ -11,6 +11,9 @@ import type {
 	AnalyzeImportData,
 	AnalyzeImportErrors,
 	AnalyzeImportResponses,
+	AttachTagToSourceData,
+	AttachTagToSourceErrors,
+	AttachTagToSourceResponses,
 	CreateChannelData,
 	CreateChannelErrors,
 	CreateChannelPersonData,
@@ -28,6 +31,9 @@ import type {
 	CreateImportResponses,
 	CreateIntegrationImportData,
 	CreateIntegrationImportResponses,
+	CreateTagData,
+	CreateTagErrors,
+	CreateTagResponses,
 	DeleteChannelData,
 	DeleteChannelErrors,
 	DeleteChannelResponses,
@@ -37,6 +43,12 @@ import type {
 	DeletePersonData,
 	DeletePersonErrors,
 	DeletePersonResponses,
+	DeleteTagData,
+	DeleteTagErrors,
+	DeleteTagResponses,
+	DetachTagFromSourceData,
+	DetachTagFromSourceErrors,
+	DetachTagFromSourceResponses,
 	ExportChannelPeopleCsvData,
 	ExportChannelPeopleCsvErrors,
 	ExportChannelPeopleCsvResponses,
@@ -64,8 +76,10 @@ import type {
 	GetCompanyErrors,
 	GetCompanyResponses,
 	GetEventInsightsData,
+	GetEventInsightsErrors,
 	GetEventInsightsResponses,
 	GetEventParticipantTrendData,
+	GetEventParticipantTrendErrors,
 	GetEventParticipantTrendResponses,
 	GetImportJobData,
 	GetImportJobErrors,
@@ -75,6 +89,7 @@ import type {
 	GetIntegrationImportJobData,
 	GetIntegrationImportJobResponses,
 	GetOverviewData,
+	GetOverviewErrors,
 	GetOverviewResponses,
 	GetPersonData,
 	GetPersonErrors,
@@ -100,6 +115,8 @@ import type {
 	ListImportJobsResponses,
 	ListPeopleData,
 	ListPeopleResponses,
+	ListTagsData,
+	ListTagsResponses,
 	MergePersonData,
 	MergePersonErrors,
 	MergePersonResponses,
@@ -118,31 +135,118 @@ import type {
 	UpdatePersonData,
 	UpdatePersonErrors,
 	UpdatePersonResponses,
+	UpdateTagData,
+	UpdateTagErrors,
+	UpdateTagResponses,
 } from "./types.gen.js";
 
 export type Options<
 	TData extends TDataShape = TDataShape,
 	ThrowOnError extends boolean = boolean,
 > = Options2<TData, ThrowOnError> & {
-	/**
-	 * You can provide a client instance returned by `createClient()` instead of
-	 * individual options. This might be also useful if you want to implement a
-	 * custom client.
-	 */
 	client?: Client;
-	/**
-	 * You can pass arbitrary values through the `meta` object. This can be
-	 * used to access values that aren't defined as part of the SDK function.
-	 */
 	meta?: Record<string, unknown>;
 };
 
+export class Tag {
+	public static deleteTag<ThrowOnError extends boolean = false>(
+		options: Options<DeleteTagData, ThrowOnError>,
+	) {
+		return (options.client ?? client).delete<
+			DeleteTagResponses,
+			DeleteTagErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/tag/{id}",
+			...options,
+		});
+	}
+
+	public static updateTag<ThrowOnError extends boolean = false>(
+		options: Options<UpdateTagData, ThrowOnError>,
+	) {
+		return (options.client ?? client).put<
+			UpdateTagResponses,
+			UpdateTagErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/tag/{id}",
+			...options,
+			headers: {
+				"Content-Type": "application/json",
+				...options.headers,
+			},
+		});
+	}
+
+	public static listTags<ThrowOnError extends boolean = false>(
+		options?: Options<ListTagsData, ThrowOnError>,
+	) {
+		return (options?.client ?? client).get<
+			ListTagsResponses,
+			unknown,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/tag",
+			...options,
+		});
+	}
+
+	public static createTag<ThrowOnError extends boolean = false>(
+		options: Options<CreateTagData, ThrowOnError>,
+	) {
+		return (options.client ?? client).post<
+			CreateTagResponses,
+			CreateTagErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/tag",
+			...options,
+			headers: {
+				"Content-Type": "application/json",
+				...options.headers,
+			},
+		});
+	}
+
+	public static attachTagToSource<ThrowOnError extends boolean = false>(
+		options: Options<AttachTagToSourceData, ThrowOnError>,
+	) {
+		return (options.client ?? client).post<
+			AttachTagToSourceResponses,
+			AttachTagToSourceErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/tag/source/{sourceId}",
+			...options,
+			headers: {
+				"Content-Type": "application/json",
+				...options.headers,
+			},
+		});
+	}
+
+	public static detachTagFromSource<ThrowOnError extends boolean = false>(
+		options: Options<DetachTagFromSourceData, ThrowOnError>,
+	) {
+		return (options.client ?? client).delete<
+			DetachTagFromSourceResponses,
+			DetachTagFromSourceErrors,
+			ThrowOnError
+		>({
+			security: [{ scheme: "bearer", type: "http" }],
+			url: "/path/tag/{tagId}/source/{sourceId}",
+			...options,
+		});
+	}
+}
+
 export class Event_ {
-	/**
-	 * 이벤트 삭제
-	 *
-	 * 이벤트를 삭제합니다.
-	 */
 	public static deleteEvent<ThrowOnError extends boolean = false>(
 		options: Options<DeleteEventData, ThrowOnError>,
 	) {
@@ -157,11 +261,6 @@ export class Event_ {
 		});
 	}
 
-	/**
-	 * 이벤트 수정
-	 *
-	 * 이벤트를 수정합니다.
-	 */
 	public static updateEvent<ThrowOnError extends boolean = false>(
 		options: Options<UpdateEventData, ThrowOnError>,
 	) {
@@ -180,11 +279,6 @@ export class Event_ {
 		});
 	}
 
-	/**
-	 * 이벤트 목록 조회
-	 *
-	 * 조직의 모든 이벤트 목록을 조회합니다.
-	 */
 	public static listEvents<ThrowOnError extends boolean = false>(
 		options?: Options<ListEventsData, ThrowOnError>,
 	) {
@@ -199,11 +293,6 @@ export class Event_ {
 		});
 	}
 
-	/**
-	 * 이벤트 생성
-	 *
-	 * 새로운 이벤트를 생성합니다.
-	 */
 	public static createEvent<ThrowOnError extends boolean = false>(
 		options: Options<CreateEventData, ThrowOnError>,
 	) {
@@ -222,11 +311,6 @@ export class Event_ {
 		});
 	}
 
-	/**
-	 * 이벤트의 Person 목록 조회
-	 *
-	 * 이벤트에 연결된 Person 목록을 페이징하여 조회합니다.
-	 */
 	public static listEventPeople<ThrowOnError extends boolean = false>(
 		options: Options<ListEventPeopleData, ThrowOnError>,
 	) {
@@ -241,11 +325,6 @@ export class Event_ {
 		});
 	}
 
-	/**
-	 * 이벤트에 Person 생성
-	 *
-	 * 이벤트에 새로운 Person을 생성하거나 기존 Person에 이벤트를 연결합니다.
-	 */
 	public static createEventPerson<ThrowOnError extends boolean = false>(
 		options: Options<CreateEventPersonData, ThrowOnError>,
 	) {
@@ -264,11 +343,6 @@ export class Event_ {
 		});
 	}
 
-	/**
-	 * 이벤트의 Person CSV 내보내기
-	 *
-	 * 이벤트에 연결된 모든 Person을 CSV 파일로 내보냅니다.
-	 */
 	public static exportEventPeopleCsv<ThrowOnError extends boolean = false>(
 		options: Options<ExportEventPeopleCsvData, ThrowOnError>,
 	) {
@@ -285,11 +359,6 @@ export class Event_ {
 }
 
 export class Company {
-	/**
-	 * Company 단건 조회
-	 *
-	 * Company의 상세 정보를 조회합니다.
-	 */
 	public static getCompany<ThrowOnError extends boolean = false>(
 		options: Options<GetCompanyData, ThrowOnError>,
 	) {
@@ -304,11 +373,6 @@ export class Company {
 		});
 	}
 
-	/**
-	 * Company 수정
-	 *
-	 * Company의 정보를 수정합니다.
-	 */
 	public static updateCompany<ThrowOnError extends boolean = false>(
 		options: Options<UpdateCompanyData, ThrowOnError>,
 	) {
@@ -327,11 +391,6 @@ export class Company {
 		});
 	}
 
-	/**
-	 * Company 목록 조회
-	 *
-	 * 조직의 모든 Company 목록을 페이징하여 조회합니다. keyword로 도메인 또는 표시 이름을 검색할 수 있습니다.
-	 */
 	public static listCompanies<ThrowOnError extends boolean = false>(
 		options?: Options<ListCompaniesData, ThrowOnError>,
 	) {
@@ -346,11 +405,6 @@ export class Company {
 		});
 	}
 
-	/**
-	 * Company의 Person 목록 조회
-	 *
-	 * Company에 속한 Person 목록을 페이징하여 조회합니다.
-	 */
 	public static listCompanyPeople<ThrowOnError extends boolean = false>(
 		options: Options<ListCompanyPeopleData, ThrowOnError>,
 	) {
@@ -365,11 +419,6 @@ export class Company {
 		});
 	}
 
-	/**
-	 * Company의 Person CSV 내보내기
-	 *
-	 * Company에 속한 모든 Person을 CSV 파일로 내보냅니다.
-	 */
 	public static exportCompanyPeopleCsv<ThrowOnError extends boolean = false>(
 		options: Options<ExportCompanyPeopleCsvData, ThrowOnError>,
 	) {
@@ -386,11 +435,6 @@ export class Company {
 }
 
 export class Channel {
-	/**
-	 * 채널 삭제
-	 *
-	 * 채널을 삭제합니다.
-	 */
 	public static deleteChannel<ThrowOnError extends boolean = false>(
 		options: Options<DeleteChannelData, ThrowOnError>,
 	) {
@@ -405,11 +449,6 @@ export class Channel {
 		});
 	}
 
-	/**
-	 * 채널 수정
-	 *
-	 * 기존 채널 정보를 수정합니다.
-	 */
 	public static updateChannel<ThrowOnError extends boolean = false>(
 		options: Options<UpdateChannelData, ThrowOnError>,
 	) {
@@ -428,11 +467,6 @@ export class Channel {
 		});
 	}
 
-	/**
-	 * 채널 목록 조회
-	 *
-	 * 조직의 모든 채널 목록을 조회합니다.
-	 */
 	public static listChannels<ThrowOnError extends boolean = false>(
 		options?: Options<ListChannelsData, ThrowOnError>,
 	) {
@@ -447,11 +481,6 @@ export class Channel {
 		});
 	}
 
-	/**
-	 * 채널 생성
-	 *
-	 * 새로운 채널을 생성합니다.
-	 */
 	public static createChannel<ThrowOnError extends boolean = false>(
 		options: Options<CreateChannelData, ThrowOnError>,
 	) {
@@ -470,11 +499,6 @@ export class Channel {
 		});
 	}
 
-	/**
-	 * 채널의 Person 목록 조회
-	 *
-	 * 채널에 연결된 Person 목록을 페이징하여 조회합니다.
-	 */
 	public static listChannelPeople<ThrowOnError extends boolean = false>(
 		options: Options<ListChannelPeopleData, ThrowOnError>,
 	) {
@@ -489,11 +513,6 @@ export class Channel {
 		});
 	}
 
-	/**
-	 * 채널에 Person 생성
-	 *
-	 * 채널에 새로운 Person을 생성하거나 기존 Person에 채널을 연결합니다.
-	 */
 	public static createChannelPerson<ThrowOnError extends boolean = false>(
 		options: Options<CreateChannelPersonData, ThrowOnError>,
 	) {
@@ -512,11 +531,6 @@ export class Channel {
 		});
 	}
 
-	/**
-	 * 채널의 Person CSV 내보내기
-	 *
-	 * 채널에 연결된 모든 Person을 CSV 파일로 내보냅니다.
-	 */
 	public static exportChannelPeopleCsv<ThrowOnError extends boolean = false>(
 		options: Options<ExportChannelPeopleCsvData, ThrowOnError>,
 	) {
@@ -533,11 +547,6 @@ export class Channel {
 }
 
 export class Person {
-	/**
-	 * Person 병합
-	 *
-	 * Source Person을 Target Person으로 병합합니다.
-	 */
 	public static mergePerson<ThrowOnError extends boolean = false>(
 		options: Options<MergePersonData, ThrowOnError>,
 	) {
@@ -552,11 +561,6 @@ export class Person {
 		});
 	}
 
-	/**
-	 * Person 병합 취소
-	 *
-	 * 병합된 Person을 원래 상태로 분리합니다.
-	 */
 	public static undoMergePerson<ThrowOnError extends boolean = false>(
 		options: Options<UndoMergePersonData, ThrowOnError>,
 	) {
@@ -571,11 +575,6 @@ export class Person {
 		});
 	}
 
-	/**
-	 * Person 삭제
-	 *
-	 * Person을 삭제합니다.
-	 */
 	public static deletePerson<ThrowOnError extends boolean = false>(
 		options: Options<DeletePersonData, ThrowOnError>,
 	) {
@@ -590,11 +589,6 @@ export class Person {
 		});
 	}
 
-	/**
-	 * Person 상세 조회
-	 *
-	 * Person 상세 정보를 조회합니다.
-	 */
 	public static getPerson<ThrowOnError extends boolean = false>(
 		options: Options<GetPersonData, ThrowOnError>,
 	) {
@@ -609,11 +603,6 @@ export class Person {
 		});
 	}
 
-	/**
-	 * Person 수정
-	 *
-	 * Person 정보를 부분 수정합니다. null 필드는 기존 값 유지.
-	 */
 	public static updatePerson<ThrowOnError extends boolean = false>(
 		options: Options<UpdatePersonData, ThrowOnError>,
 	) {
@@ -632,11 +621,6 @@ export class Person {
 		});
 	}
 
-	/**
-	 * Person 목록 조회
-	 *
-	 * 조직의 모든 Person 목록을 페이징하여 조회합니다.
-	 */
 	public static listPeople<ThrowOnError extends boolean = false>(
 		options?: Options<ListPeopleData, ThrowOnError>,
 	) {
@@ -651,11 +635,6 @@ export class Person {
 		});
 	}
 
-	/**
-	 * Person CSV 내보내기
-	 *
-	 * 조직의 모든 Person을 CSV 파일로 내보냅니다.
-	 */
 	public static exportPeopleCsv<ThrowOnError extends boolean = false>(
 		options?: Options<ExportPeopleCsvData, ThrowOnError>,
 	) {
@@ -672,11 +651,6 @@ export class Person {
 }
 
 export class IntegrationImport {
-	/**
-	 * 외부 이벤트 import 실행
-	 *
-	 * 외부 서비스의 이벤트를 선택하여 참가자 데이터 import를 시작합니다.
-	 */
 	public static createIntegrationImport<ThrowOnError extends boolean = false>(
 		options: Options<CreateIntegrationImportData, ThrowOnError>,
 	) {
@@ -695,11 +669,6 @@ export class IntegrationImport {
 		});
 	}
 
-	/**
-	 * Integration Import 작업 상세 조회
-	 *
-	 * Integration Import 작업의 상세 정보를 조회합니다.
-	 */
 	public static getIntegrationImportJob<ThrowOnError extends boolean = false>(
 		options: Options<GetIntegrationImportJobData, ThrowOnError>,
 	) {
@@ -714,11 +683,6 @@ export class IntegrationImport {
 		});
 	}
 
-	/**
-	 * 외부 이벤트 import 후보 조회
-	 *
-	 * 연동된 외부 서비스(EventBrite 등)에서 import 가능한 이벤트 목록을 조회합니다.
-	 */
 	public static getIntegrationImportCandidates<
 		ThrowOnError extends boolean = false,
 	>(options: Options<GetIntegrationImportCandidatesData, ThrowOnError>) {
@@ -735,11 +699,6 @@ export class IntegrationImport {
 }
 
 export class BulkImport {
-	/**
-	 * Import 작업 목록 조회
-	 *
-	 * Import 작업 목록을 페이지네이션으로 조회합니다.
-	 */
 	public static listImportJobs<ThrowOnError extends boolean = false>(
 		options?: Options<ListImportJobsData, ThrowOnError>,
 	) {
@@ -754,11 +713,6 @@ export class BulkImport {
 		});
 	}
 
-	/**
-	 * Import 작업 생성
-	 *
-	 * 분석된 CSV 파일을 기반으로 Import 작업을 생성합니다.
-	 */
 	public static createImport<ThrowOnError extends boolean = false>(
 		options: Options<CreateImportData, ThrowOnError>,
 	) {
@@ -777,11 +731,6 @@ export class BulkImport {
 		});
 	}
 
-	/**
-	 * CSV 파일 분석
-	 *
-	 * 업로드된 CSV 파일을 분석하여 헤더, 미리보기, 필드 매핑 추천을 반환합니다.
-	 */
 	public static analyzeImport<ThrowOnError extends boolean = false>(
 		options?: Options<AnalyzeImportData, ThrowOnError>,
 	) {
@@ -801,11 +750,6 @@ export class BulkImport {
 		});
 	}
 
-	/**
-	 * Import 작업 상세 조회
-	 *
-	 * Import 작업의 상세 정보를 조회합니다.
-	 */
 	public static getImportJob<ThrowOnError extends boolean = false>(
 		options: Options<GetImportJobData, ThrowOnError>,
 	) {
@@ -820,11 +764,6 @@ export class BulkImport {
 		});
 	}
 
-	/**
-	 * 실패 행 CSV 다운로드
-	 *
-	 * 완료된 Import 작업의 실패한 행만 원본 CSV 형태로 다운로드합니다.
-	 */
 	public static exportFailedRowsCsv<ThrowOnError extends boolean = false>(
 		options: Options<ExportFailedRowsCsvData, ThrowOnError>,
 	) {
@@ -841,11 +780,6 @@ export class BulkImport {
 }
 
 export class PersonActivity {
-	/**
-	 * Person 활동 이력 조회 (커서 기반)
-	 *
-	 * Person의 활동 이력을 커서 기반으로 조회합니다. 동일 사용자가 5분 내에 연속 수정한 이력은 하나로 병합(coalescing)되므로, 반환되는 content 수가 pageSize보다 적을 수 있습니다.
-	 */
 	public static getActivity<ThrowOnError extends boolean = false>(
 		options: Options<GetActivityData, ThrowOnError>,
 	) {
@@ -862,17 +796,12 @@ export class PersonActivity {
 }
 
 export class Overview {
-	/**
-	 * 개요 조회
-	 *
-	 * Path 대시보드 개요 (이벤트 수, 인원 수)를 반환합니다.
-	 */
 	public static getOverview<ThrowOnError extends boolean = false>(
 		options?: Options<GetOverviewData, ThrowOnError>,
 	) {
 		return (options?.client ?? client).get<
 			GetOverviewResponses,
-			unknown,
+			GetOverviewErrors,
 			ThrowOnError
 		>({
 			security: [{ scheme: "bearer", type: "http" }],
@@ -881,11 +810,6 @@ export class Overview {
 		});
 	}
 
-	/**
-	 * 개요 통계 조회
-	 *
-	 * Path 대시보드에 표시할 전체 통계, 주요 채널, 이벤트 등록 추이를 반환합니다.
-	 */
 	public static getStats<ThrowOnError extends boolean = false>(
 		options?: Options<GetStatsData, ThrowOnError>,
 	) {
@@ -902,17 +826,12 @@ export class Overview {
 }
 
 export class Analysis {
-	/**
-	 * 이벤트 등록 추이 분석
-	 *
-	 * 조직의 전체 이벤트를 시작일 순으로 정렬하고 각 이벤트의 참가자 수, 신규(Net New), 재참여(Returning) 비율을 반환합니다.
-	 */
 	public static getEventParticipantTrend<ThrowOnError extends boolean = false>(
 		options?: Options<GetEventParticipantTrendData, ThrowOnError>,
 	) {
 		return (options?.client ?? client).get<
 			GetEventParticipantTrendResponses,
-			unknown,
+			GetEventParticipantTrendErrors,
 			ThrowOnError
 		>({
 			security: [{ scheme: "bearer", type: "http" }],
@@ -921,17 +840,12 @@ export class Analysis {
 		});
 	}
 
-	/**
-	 * 이벤트 인사이트 시그널 조회
-	 *
-	 * 이벤트 참가자 추이 데이터를 기반으로 인사이트 시그널을 생성하여 반환합니다.
-	 */
 	public static getEventInsights<ThrowOnError extends boolean = false>(
 		options?: Options<GetEventInsightsData, ThrowOnError>,
 	) {
 		return (options?.client ?? client).get<
 			GetEventInsightsResponses,
-			unknown,
+			GetEventInsightsErrors,
 			ThrowOnError
 		>({
 			security: [{ scheme: "bearer", type: "http" }],
@@ -940,11 +854,6 @@ export class Analysis {
 		});
 	}
 
-	/**
-	 * 채널-이벤트 어트리뷰션 분석
-	 *
-	 * 채널 참여자가 각 이벤트에 얼마나 유입되었는지 기여도를 분석합니다.
-	 */
 	public static getChannelEventContribution<
 		ThrowOnError extends boolean = false,
 	>(options: Options<GetChannelEventContributionData, ThrowOnError>) {
@@ -959,11 +868,6 @@ export class Analysis {
 		});
 	}
 
-	/**
-	 * 채널 오디언스 분석
-	 *
-	 * 선택한 채널들 간의 인원 교차(오버랩) 분석 결과를 반환합니다.
-	 */
 	public static getChannelOverlap<ThrowOnError extends boolean = false>(
 		options: Options<GetChannelOverlapData, ThrowOnError>,
 	) {
