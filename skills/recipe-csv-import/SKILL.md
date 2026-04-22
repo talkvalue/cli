@@ -1,17 +1,6 @@
 ---
 name: recipe-csv-import
-description: "Full CSV import workflow: analyze a file, create an import job, monitor progress, and export failures."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "recipe"
-    domain: "data"
-    requires:
-      bins:
-        - talkvalue
-      skills:
-        - talkvalue-import
-        - talkvalue-channel
+description: "Recipe for the full TalkValue CSV import workflow: analyze a file to suggest column mappings, create the import job, poll status until terminal (COMPLETED/PARTIAL_SUCCESS/FAILED), and export any failed rows. Use when the user wants to bulk-import contacts from a CSV end-to-end."
 ---
 
 # Recipe: CSV Import

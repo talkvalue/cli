@@ -1,14 +1,6 @@
 ---
 name: talkvalue-company
-description: "View and manage companies and their associated contacts."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue path company --help"
+description: "Manages TalkValue companies and their contacts: list/search companies, get details, update display name, list company contacts, and export. Use when the user wants to inspect a company, rename it, see contacts associated with a company, or export company contacts as CSV."
 ---
 
 # TalkValue CLI — Companies

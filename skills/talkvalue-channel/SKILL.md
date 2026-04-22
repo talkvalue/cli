@@ -1,14 +1,6 @@
 ---
 name: talkvalue-channel
-description: "Manage marketing channels and channel members."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue path channel --help"
+description: "Manages TalkValue marketing channels and channel members: list, get, create, update (PUT semantics — name required), delete channels, plus add/list/export channel members. Use when the user wants to work with channels or channel membership, or export channel members as CSV."
 ---
 
 # TalkValue CLI — Channels
@@ -27,7 +19,7 @@ talkvalue path channel list
 
 No flags.
 
-Output columns: ID, Name, Icon, Color, People (count), Created At
+Output columns: ID, Name, Icon, Color, People (count), Tags, Created At
 
 ### Example
 
@@ -86,15 +78,15 @@ talkvalue path channel create -n "Early Access" --color blue
 
 ## channel update
 
-Update an existing channel's metadata.
+Update an existing channel. The backend uses **PUT semantics** (full replace), so `--name` is always required even when only changing optional fields.
 
 ```bash
-talkvalue path channel update <id> [flags]
+talkvalue path channel update <id> --name <name> [flags]
 ```
 
 | Flag | Required | Default | Description |
 |------|----------|---------|-------------|
-| `--name <name>` | No | - | New display name |
+| `--name <name>` | Yes | - | Display name (always required by backend) |
 | `--icon <icon>` | No | - | New icon identifier |
 | `--color <color>` | No | - | New hex color code or named color |
 
@@ -103,10 +95,18 @@ Output: Updated channel object.
 ### Example
 
 ```bash
+# Rename only
 talkvalue path channel update ch_01abc123 --name "Paying Customers"
-talkvalue path channel update ch_01abc123 --color "#0055FF" --icon bolt
+
+# Change color/icon — must still pass current --name
+talkvalue path channel update ch_01abc123 --name "Paying Customers" --color "#0055FF" --icon bolt
+
+# Full update
 talkvalue path channel update ch_01abc123 --name "Premium" --icon crown --color "#C0C0C0"
 ```
+
+> [!TIP]
+> Run `channel get <id>` first if you need the current name. Tags are managed separately via the `tag` command (`tag attach`/`tag detach`), not via `channel update`.
 
 ---
 
@@ -248,6 +248,8 @@ talkvalue path channel export ch_01abc123 | cut -d',' -f1,2,3
 - The `--phone` flag on `add-person` is repeatable. Pass it multiple times to store multiple phone numbers for one person.
 - `--joined-at` accepts ISO 8601 format, e.g. `2025-03-01T00:00:00Z`. Omit it to default to the server-side current time.
 - Before deleting a channel, run `channel people` to review its current membership.
+- **Update is PUT, not PATCH:** the backend rejects partial bodies. The CLI requires `--name` on every `channel update` call to enforce this.
+- **Tags:** channels carry tag labels. Use `tag attach`/`tag detach` (see `../talkvalue-tag/SKILL.md`) to manage them.
 
 ## See Also
 
@@ -255,3 +257,4 @@ talkvalue path channel export ch_01abc123 | cut -d',' -f1,2,3
 - `../talkvalue-person/SKILL.md` — Manage individual contacts directly
 - `../talkvalue-company/SKILL.md` — Company-level contact views and filtering
 - `../talkvalue-event/SKILL.md` — Event registration and attendance data
+- `../talkvalue-tag/SKILL.md` — Manage tag labels and attach them to channels/events

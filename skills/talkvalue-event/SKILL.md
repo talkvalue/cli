@@ -1,14 +1,6 @@
 ---
 name: talkvalue-event
-description: "Manage events and event participants."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue path event --help"
+description: "Manages TalkValue events and event participants: list, get, create, update (PUT semantics — name/start-at/time-zone required), delete events, plus add/list/export attendees. Use when the user wants to inspect or modify events, manage event registrations, or export attendee data."
 ---
 
 # TalkValue CLI — Event
@@ -35,7 +27,7 @@ talkvalue path event list
 
 No flags.
 
-**Output:** Table — ID, Name, Time Zone, Start At, Location, People (count), Created At
+**Output:** Table — ID, Name, Time Zone, Start At, Location, People (count), Tags, Created At
 
 **Examples**
 
@@ -113,10 +105,10 @@ talkvalue path event create \
 
 ### `event update <id>`
 
-Update one or more fields on an event. Only supplied flags are changed; omitted fields remain untouched.
+Update an event. The backend uses **PUT semantics** (full replace), so `--name`, `--start-at`, and `--time-zone` are always required even when only changing optional fields.
 
 ```bash
-talkvalue path event update <id> [flags]
+talkvalue path event update <id> --name <name> --start-at <startAt> --time-zone <timeZone> [flags]
 ```
 
 **Arguments**
@@ -129,9 +121,9 @@ talkvalue path event update <id> [flags]
 
 | Flag | Required | Default | Description |
 |------|----------|---------|-------------|
-| `--name <name>` | No | — | Event name |
-| `--start-at <startAt>` | No | — | Start date/time (ISO 8601) |
-| `--time-zone <timeZone>` | No | — | IANA time zone identifier |
+| `--name <name>` | Yes | — | Event name (always required by backend) |
+| `--start-at <startAt>` | Yes | — | Start date/time, ISO 8601 (always required) |
+| `--time-zone <timeZone>` | Yes | — | IANA time zone identifier (always required) |
 | `--end-at <endAt>` | No | — | End date/time (ISO 8601) |
 | `--location <location>` | No | — | Physical or virtual location |
 
@@ -140,15 +132,22 @@ talkvalue path event update <id> [flags]
 **Examples**
 
 ```bash
-# Move to a virtual venue
-talkvalue path event update 99 --location "Online (Zoom)"
+# Move to a virtual venue — must still pass current --name, --start-at, --time-zone
+talkvalue path event update 99 \
+  --name "Q3 Product Summit" \
+  --start-at "2026-09-15T09:00:00" \
+  --time-zone "America/Chicago" \
+  --location "Online (Zoom)"
 
-# Extend the end time
-talkvalue path event update 99 --end-at "2026-09-16T18:00:00"
-
-# Rename and update time zone
-talkvalue path event update 99 --name "Q3 Summit (APAC)" --time-zone "Asia/Tokyo"
+# Rename and change time zone
+talkvalue path event update 99 \
+  --name "Q3 Summit (APAC)" \
+  --start-at "2026-09-15T18:00:00" \
+  --time-zone "Asia/Tokyo"
 ```
+
+> [!TIP]
+> Run `event get <id>` first to fetch current `--name`, `--start-at`, and `--time-zone` if you only intend to change one optional field. Tags are managed separately via the `tag` command (`tag attach`/`tag detach`), not via `event update`.
 
 ---
 
@@ -318,12 +317,13 @@ talkvalue path event person export 99 | wc -l
 
 ## Tips
 
-- **Required fields on create:** `--name`, `--start-at`, and `--time-zone` are all mandatory. The CLI errors without them.
+- **Required fields on create AND update:** `--name`, `--start-at`, and `--time-zone` are all mandatory on both `event create` and `event update` (backend PUT semantics). The CLI errors without them.
 - **Time zones:** Use IANA identifiers (`America/New_York`, `Europe/London`, `Asia/Tokyo`). Abbreviations like `EST` or `PST` are ambiguous and may be rejected.
 - **ISO 8601 timestamps:** `--start-at`, `--end-at`, and `--joined-at` all accept ISO 8601 format, e.g. `2026-09-15T09:00:00` or `2026-09-15T09:00:00Z`.
 - **Adding existing contacts:** `event person add` matches on email. If the address already exists in the org, the existing record is linked to the event and any supplied fields are updated.
 - **Export pipeline:** `event person export` always produces CSV. Pipe directly into tools like `csvkit` or a spreadsheet importer — `--format` has no effect here.
 - **Bulk channel filtering:** `--channel-id` on `event person list` is repeatable. Pass it multiple times to filter across several channels at once.
+- **Tags:** events carry tag labels. Use `tag attach`/`tag detach` (see `../talkvalue-tag/SKILL.md`) to manage them.
 
 ## See Also
 
@@ -331,3 +331,4 @@ talkvalue path event person export 99 | wc -l
 - `../talkvalue-person/SKILL.md` — General contact management (list, update, merge, activity)
 - `../talkvalue-company/SKILL.md` — Company management
 - `../talkvalue-channel/SKILL.md` — Channel management
+- `../talkvalue-tag/SKILL.md` — Manage tag labels and attach them to events/channels

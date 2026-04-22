@@ -1,17 +1,6 @@
 ---
 name: recipe-new-registrants
-description: "Find this month's event registrants and export them."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "recipe"
-    domain: "events"
-    requires:
-      bins:
-        - talkvalue
-      skills:
-        - talkvalue-event
-        - talkvalue-person
+description: "Recipe for finding this month's TalkValue event registrants and exporting them. Use when the user wants the latest event sign-ups, monthly registrant counts, or to export new registrants for follow-up."
 ---
 
 # Recipe: New Registrants

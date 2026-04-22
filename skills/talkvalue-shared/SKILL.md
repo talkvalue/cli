@@ -1,14 +1,6 @@
 ---
 name: talkvalue-shared
-description: "TalkValue CLI: Shared patterns for authentication, global flags, output formatting, and environment variables."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue --help"
+description: "Shared TalkValue CLI reference covering authentication, global flags, output formatting (json/table/csv), environment variables, and exit codes. Use when working with any TalkValue (`talkvalue`) command, configuring credentials or profiles, picking output format, or interpreting CLI exit codes."
 ---
 
 # TalkValue CLI — Shared Reference
@@ -124,10 +116,17 @@ Paginated commands accept:
 ## Overview Dashboard
 
 ```bash
-talkvalue path overview           # summary dashboard
-talkvalue path overview stats     # detailed statistics
-  --timezone <tz>                 # timezone override
+# Summary dashboard with diversification, growth, and retention metrics
+talkvalue path overview [--timezone <tz>] [--tag-id <id>]
+
+# Detailed statistics: top channels and event registration trends
+talkvalue path overview stats [--timezone <tz>]
 ```
+
+| Flag | Available on | Description |
+|------|--------------|-------------|
+| `--timezone <tz>` | `overview`, `overview stats` | IANA time zone for date bucketing (parent option; `stats` inherits) |
+| `--tag-id <id>` | `overview` | Restrict the summary to events carrying this tag |
 
 ## Configuration (hidden)
 

@@ -1,7 +1,7 @@
 <h1 align="center">TalkValue CLI</h1>
 
 **Manage contacts, events, channels, companies, and analytics from the command line.**<br>
-Built for humans and AI agents. Structured JSON output. 10 agent skills included.
+Built for humans and AI agents. Structured JSON output. 11 agent skills included.
 
 <p>
   <a href="https://www.npmjs.com/package/@talkvalue/cli"><img src="https://img.shields.io/npm/v/@talkvalue/cli" alt="npm version"></a>
@@ -104,13 +104,14 @@ All data commands live under the `path` prefix. Run `talkvalue [command] --help`
 
 | Command | Description |
 |---------|-------------|
-| `path overview` | Dashboard summary and stats |
+| `path overview` | Dashboard summary and stats (filter with `--tag-id`) |
 | `path person` | List, get, update, delete, merge, export contacts |
 | `path event` | Manage events and event participants |
 | `path channel` | Manage channels and channel members |
 | `path company` | List, get, update companies and company members |
-| `path analysis` | Channel attribution, audience overlap, event trends |
+| `path analysis` | Channel attribution, audience overlap, event trends (`--tag-id` filters) |
 | `path import` | Analyze CSV, create import jobs, export failures |
+| `path tag` | Create tags and attach them to channels or events |
 | `version` | Show CLI version |
 
 ### Global Flags
@@ -125,7 +126,7 @@ All data commands live under the `path` prefix. Run `talkvalue [command] --help`
 
 ## AI Agent Skills
 
-The repo ships 10 agent skills (`SKILL.md` files) — one for every command group, plus recipes for common workflows. Pair them with any AI coding assistant for structured CLI access to TalkValue.
+The repo ships 11 agent skills (`SKILL.md` files) — one for every command group, plus recipes for common workflows. Pair them with any AI coding assistant for structured CLI access to TalkValue.
 
 ```bash
 # Install all skills at once
@@ -147,6 +148,7 @@ npx skills add https://github.com/talkvalue/cli/tree/main/skills/talkvalue-event
 | [talkvalue-company](skills/talkvalue-company/SKILL.md) | View and manage companies |
 | [talkvalue-analysis](skills/talkvalue-analysis/SKILL.md) | Channel attribution, audience overlap, event insights |
 | [talkvalue-import](skills/talkvalue-import/SKILL.md) | CSV import: analyze, create jobs, monitor, export failures |
+| [talkvalue-tag](skills/talkvalue-tag/SKILL.md) | Create tag labels and attach them to channels or events |
 
 ### Recipes
 

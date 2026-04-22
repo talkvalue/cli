@@ -57,6 +57,7 @@ npx skills add https://github.com/talkvalue/cli/tree/main/skills/talkvalue-event
 | [talkvalue-company](skills/talkvalue-company/SKILL.md) | Manage companies: list, get, update, company people, export |
 | [talkvalue-analysis](skills/talkvalue-analysis/SKILL.md) | Analytics: channel attribution, audience overlap, event insights and trends |
 | [talkvalue-import](skills/talkvalue-import/SKILL.md) | CSV import: analyze, create jobs, monitor, export failures |
+| [talkvalue-tag](skills/talkvalue-tag/SKILL.md) | Create tag labels and attach them to channels or events |
 
 #### Recipe Skills
 

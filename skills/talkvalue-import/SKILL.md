@@ -1,14 +1,6 @@
 ---
 name: talkvalue-import
-description: "CSV import: analyze files, create import jobs, monitor progress, and export failures."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue path import --help"
+description: "TalkValue CSV import workflow: analyze CSV files to suggest column mappings, create import jobs (UPDATE/SKIP modes), monitor status (PENDING → RUNNING → COMPLETED/PARTIAL_SUCCESS/FAILED), and export failed rows. Use when the user wants to bulk-import contacts from CSV, monitor an import in progress, or recover failed rows."
 ---
 
 # TalkValue CLI — Import
@@ -82,11 +74,14 @@ talkvalue path import get <id>
 ```bash
 talkvalue path import get imp_abc123
 
-# Watch status until complete
+# Watch status until terminal — handles all four terminal states
+# (PENDING and RUNNING are in-progress; COMPLETED, PARTIAL_SUCCESS, FAILED are terminal)
 while true; do
   status=$(talkvalue path import get imp_abc123 --json | jq -r '.data.status')
   echo "Status: $status"
-  [ "$status" = "COMPLETED" ] && break
+  case "$status" in
+    COMPLETED|PARTIAL_SUCCESS|FAILED) break ;;
+  esac
   sleep 10
 done
 ```
@@ -237,6 +232,7 @@ talkvalue path import failed-export imp_abc123 | tail -n +2 | wc -l
 - `UPDATE` mode overwrites matching contact fields. Use `SKIP` when you want to protect existing data and only add net-new contacts.
 - Check `import get <id>` after submission to monitor `status`, `processed`, and `failed` counts.
 - If `failed` is non-zero after completion, run `import failed-export <id>` to retrieve the rows and their error reasons.
+- **Import status values:** `PENDING`, `RUNNING` (in-progress) → `COMPLETED`, `PARTIAL_SUCCESS`, `FAILED` (terminal). Polling loops should treat all three terminal states as exit conditions, not just `COMPLETED`.
 
 ## See Also
 

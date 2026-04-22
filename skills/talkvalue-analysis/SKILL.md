@@ -1,14 +1,6 @@
 ---
 name: talkvalue-analysis
-description: "Channel attribution, audience overlap, and event analytics."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue path analysis --help"
+description: "Read-only TalkValue analytics: channel-event attribution, channel audience overlap, event insight signals, and participant registration trends. Use when the user wants to analyze how channels drive event attendance, find audience overlap between channels, or surface event registration insights and trends. Supports `--tag-id` filters on event-level analyses."
 ---
 
 # TalkValue CLI — Analysis
@@ -29,10 +21,10 @@ talkvalue path analysis <group> <action> [arguments] [flags]
 
 ### `analysis channel attribution`
 
-Analyze how a channel contributed to event attendance for one or more events.
+Analyze how a channel contributed to event attendance. Filter by specific events with `--event-id` (repeatable) or by tag with `--tag-id`. Without filters, the backend uses its default event scope.
 
 ```bash
-talkvalue path analysis channel attribution <channelId> --event-id <id> [--event-id <id> ...]
+talkvalue path analysis channel attribution <channelId> [flags]
 ```
 
 **Arguments**
@@ -45,7 +37,8 @@ talkvalue path analysis channel attribution <channelId> --event-id <id> [--event
 
 | Flag | Required | Default | Description |
 |------|----------|---------|-------------|
-| `--event-id <id>` | Yes (repeatable, min 1) | — | Event ID to include in attribution. Repeat for each event. |
+| `--event-id <id>` | No (repeatable) | — | Event ID to include in attribution. Repeat for each event. |
+| `--tag-id <id>` | No | — | Restrict the analysis to events carrying this tag. |
 
 **Output:** Attribution analysis object
 
@@ -60,6 +53,9 @@ talkvalue path analysis channel attribution chan_abc123 \
   --event-id evt_111 \
   --event-id evt_222 \
   --event-id evt_333
+
+# Filter by tag instead of explicit event IDs
+talkvalue path analysis channel attribution chan_abc123 --tag-id 7
 
 # JSON output for scripting
 talkvalue path analysis channel attribution chan_abc123 \
@@ -107,11 +103,17 @@ talkvalue path analysis channel audience \
 
 ### `analysis event insights`
 
-Get event insight signals for the active organization. No flags accepted.
+Get event insight signals for the active organization.
 
 ```bash
-talkvalue path analysis event insights
+talkvalue path analysis event insights [flags]
 ```
+
+**Flags**
+
+| Flag | Required | Default | Description |
+|------|----------|---------|-------------|
+| `--tag-id <id>` | No | — | Restrict insights to events carrying this tag. |
 
 **Output:** Event insights object
 
@@ -120,17 +122,24 @@ talkvalue path analysis event insights
 ```bash
 talkvalue path analysis event insights
 talkvalue path analysis event insights --json
+talkvalue path analysis event insights --tag-id 7 --json
 ```
 
 ---
 
 ### `analysis event trend`
 
-Get participant registration trend data for the active organization. No flags accepted.
+Get participant registration trend data for the active organization.
 
 ```bash
-talkvalue path analysis event trend
+talkvalue path analysis event trend [flags]
 ```
+
+**Flags**
+
+| Flag | Required | Default | Description |
+|------|----------|---------|-------------|
+| `--tag-id <id>` | No | — | Restrict the trend to events carrying this tag. |
 
 **Output:** Event trend data object
 
@@ -139,18 +148,21 @@ talkvalue path analysis event trend
 ```bash
 talkvalue path analysis event trend
 talkvalue path analysis event trend --json
+talkvalue path analysis event trend --tag-id 7 --json
 ```
 
 ---
 
 ## Tips
 
-- Attribution requires at least one `--event-id`. The CLI returns a usage error if none are supplied.
+- `attribution` accepts any combination of `--event-id` (repeatable) and `--tag-id`. With neither, the backend uses its default event scope.
 - Audience overlap accepts 2 to 5 channels. Passing 1 or more than 5 returns a usage error.
 - Both event commands (`insights`, `trend`) are scoped to the active organization. Use `--profile` or `auth switch` to target a different org.
+- `--tag-id` filters event-level analysis (`attribution`, `insights`, `trend`) to events carrying the given tag — useful for slicing by campaign, season, or any custom label managed via the `tag` command.
 - Pipe output to `jq` for field extraction: `talkvalue path analysis event trend --json | jq '.data'`
 
 ## See Also
 
 - `../talkvalue-shared/SKILL.md` — Auth, global flags, output formats, exit codes
 - `../talkvalue-import/SKILL.md` — Import contacts into channels that feed attribution
+- `../talkvalue-tag/SKILL.md` — Create tags and attach them to events to use with `--tag-id` filters

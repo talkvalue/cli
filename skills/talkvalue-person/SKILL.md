@@ -1,14 +1,6 @@
 ---
 name: talkvalue-person
-description: "Manage contacts: list, get, update, delete, merge, export, activity."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "productivity"
-    requires:
-      bins:
-        - talkvalue
-    cliHelp: "talkvalue path person --help"
+description: "Manages TalkValue contacts (people) end-to-end: list, get, update, delete, merge/unmerge, export, and view per-person change-log activity. Use when the user wants to look up, modify, merge, or export contacts, or inspect a person's activity history."
 ---
 
 # TalkValue CLI — Person

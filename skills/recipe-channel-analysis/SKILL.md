@@ -1,18 +1,6 @@
 ---
 name: recipe-channel-analysis
-description: "Analyze channel attribution across events and measure audience overlap between channels."
-metadata:
-  version: 1.0.0
-  openclaw:
-    category: "recipe"
-    domain: "analytics"
-    requires:
-      bins:
-        - talkvalue
-      skills:
-        - talkvalue-analysis
-        - talkvalue-channel
-        - talkvalue-event
+description: "Recipe for analyzing TalkValue channel performance: discover channel and event IDs, run channel-event attribution, and measure audience overlap between 2-5 channels. Use when the user asks about channel attribution, channel performance vs events, or audience overlap between marketing channels."
 ---
 
 # Recipe: Channel Analysis
