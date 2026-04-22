@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/talkvalue/cli/compare/v1.4.1...v1.5.0) (2026-04-22)
+
+
+### Features
+
+* add path tag command, tagId filters, and tags list column ([f388c05](https://github.com/talkvalue/cli/commit/f388c05884d7ed9290d833a17152089a85e9e30b))
+* notify users of available updates and add `talkvalue update` command ([491e1d6](https://github.com/talkvalue/cli/commit/491e1d6a8d8718924de068fc226cffd30b9a7115))
+
+
+### Bug Fixes
+
+* enforce backend-required fields on channel/event update ([6b50508](https://github.com/talkvalue/cli/commit/6b505085dd6c0083fd7db74f9ed50b84aa1770da))
+
 ## [1.4.1](https://github.com/talkvalue/cli/compare/v1.4.0...v1.4.1) (2026-03-26)
 
 
