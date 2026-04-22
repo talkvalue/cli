@@ -268,33 +268,17 @@ describe("createEventCommand", () => {
     expect(harness.formatter.output).toHaveBeenCalledTimes(1);
   });
 
-  it("update with only --name sends partial payload", async () => {
+  it("update with only --name fails: --start-at and --time-zone also required", async () => {
     const harness = createHarness();
-    vi.mocked(Event_.updateEvent).mockResolvedValueOnce({
-      data: {
-        createdAt: "2026-01-01T00:00:00.000Z",
-        id: 5,
-        location: null,
-        name: "New",
-        peopleCount: 50,
-        startAt: "2026-08-01T10:00:00.000Z",
-        timeZone: "Asia/Seoul",
-      },
-    } as any);
 
-    await harness.run(["update", "5", "--name", "New"]);
-
-    expect(Event_.updateEvent).toHaveBeenCalledWith({
-      path: { id: 5 },
-      body: { name: "New" },
-    });
-    expect(harness.formatter.output).toHaveBeenCalledTimes(1);
+    await expect(harness.run(["update", "5", "--name", "New"])).rejects.toThrow();
+    expect(Event_.updateEvent).not.toHaveBeenCalled();
   });
 
-  it("update without any fields throws UsageError", async () => {
+  it("update without any fields fails: backend uses PUT semantics", async () => {
     const harness = createHarness();
 
-    await expect(harness.run(["update", "5"])).rejects.toBeInstanceOf(UsageError);
+    await expect(harness.run(["update", "5"])).rejects.toThrow();
     expect(Event_.updateEvent).not.toHaveBeenCalled();
   });
 

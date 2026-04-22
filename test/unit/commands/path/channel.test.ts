@@ -176,25 +176,20 @@ describe("createChannelCommand", () => {
     });
   });
 
-  it("requires at least one field for update", async () => {
+  it("requires --name for update (backend PUT semantics)", async () => {
     const harness = createHarness();
 
-    await expect(harness.run(["update", "4"])).rejects.toBeInstanceOf(UsageError);
+    // Commander's requiredOption surfaces a CommanderError, not a UsageError —
+    // either way SDK must not be called.
+    await expect(harness.run(["update", "4"])).rejects.toThrow();
     expect(Channel.updateChannel).not.toHaveBeenCalled();
   });
 
-  it("updates icon only without --name", async () => {
+  it("requires --name even when only optional fields are provided", async () => {
     const harness = createHarness();
-    vi.mocked(Channel.updateChannel).mockResolvedValueOnce({ data: {} } as any);
 
-    await harness.run(["update", "4", "--icon", "🔥"]);
-
-    expect(Channel.updateChannel).toHaveBeenCalledWith(
-      expect.objectContaining({
-        path: { id: 4 },
-        body: { icon: "🔥" },
-      }),
-    );
+    await expect(harness.run(["update", "4", "--icon", "🔥"])).rejects.toThrow();
+    expect(Channel.updateChannel).not.toHaveBeenCalled();
   });
 
   it("forwards update payload", async () => {

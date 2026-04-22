@@ -35,9 +35,9 @@ interface CreateEventOptions {
 interface UpdateEventOptions {
   endAt?: string;
   location?: string;
-  name?: string;
-  startAt?: string;
-  timeZone?: string;
+  name: string;
+  startAt: string;
+  timeZone: string;
 }
 
 interface DeleteEventOptions {
@@ -162,31 +162,26 @@ export function createEventCommand(dependencies: EventCommandDependencies = {}):
     .command("update")
     .description("Update an event")
     .argument("<id>", "event id")
-    .option("--name <name>", "event name")
-    .option("--start-at <startAt>", "start date/time")
-    .option("--time-zone <timeZone>", "time zone")
+    .requiredOption("--name <name>", "event name (required: backend uses PUT semantics)")
+    .requiredOption("--start-at <startAt>", "start date/time (required)")
+    .requiredOption("--time-zone <timeZone>", "time zone (required)")
     .option("--end-at <endAt>", "end date/time")
     .option("--location <location>", "event location")
     .action(async (rawId: string, updateOptions: UpdateEventOptions, command: Command) => {
-      const payload = pickDefined({
-        name: updateOptions.name,
-        startAt: updateOptions.startAt,
-        timeZone: updateOptions.timeZone,
-        endAt: updateOptions.endAt,
-        location: updateOptions.location,
-      });
-
-      if (Object.keys(payload).length === 0) {
-        throw new UsageError("At least one field must be specified for update");
-      }
-
       const formatter = resolveFormatter(command, dependencies);
       await ensureAuth(command);
       const id = parseNumericId(rawId, "event id");
 
+      const payload: UpdateEventReq = {
+        name: updateOptions.name,
+        startAt: updateOptions.startAt,
+        timeZone: updateOptions.timeZone,
+        ...(updateOptions.endAt !== undefined ? { endAt: updateOptions.endAt } : {}),
+        ...(updateOptions.location !== undefined ? { location: updateOptions.location } : {}),
+      };
       const { data: event } = await Event_.updateEvent({
         path: { id },
-        body: payload as UpdateEventReq,
+        body: payload,
       });
       formatter.output(toOutputRecord(unwrap(event, "event")), toOutputContext());
     });

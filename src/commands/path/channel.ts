@@ -72,7 +72,7 @@ interface CreateChannelOptions {
 interface UpdateChannelOptions {
   color?: string;
   icon?: string;
-  name?: string;
+  name: string;
 }
 
 interface AddPersonCommandOptions {
@@ -158,26 +158,21 @@ export function createChannelCommand(options: CreateChannelCommandOptions = {}):
     .command("update")
     .description("Update a channel")
     .argument("<id>", "channel id")
-    .option("--name <name>", "channel name")
+    .requiredOption("--name <name>", "channel name (required: backend uses PUT semantics)")
     .option("--icon <icon>", "channel icon")
     .option("--color <color>", "channel color")
     .action(async (rawId: string, updateOptions: UpdateChannelOptions, command: Command) => {
-      const payload = pickDefined({
-        name: updateOptions.name,
-        icon: updateOptions.icon,
-        color: updateOptions.color,
-      });
-
-      if (Object.keys(payload).length === 0) {
-        throw new UsageError("At least one field must be specified for update");
-      }
-
       const formatter = resolveFormatter(command, options);
       await ensureAuth(command);
       const id = parseNumericId(rawId, "channel id");
+      const payload: UpdateChannelReq = {
+        name: updateOptions.name,
+        ...(updateOptions.icon !== undefined ? { icon: updateOptions.icon } : {}),
+        ...(updateOptions.color !== undefined ? { color: updateOptions.color } : {}),
+      };
       const { data: channel } = await Channel.updateChannel({
         path: { id },
-        body: payload as UpdateChannelReq,
+        body: payload,
       });
       formatter.output(toOutputRecord(unwrap(channel, "channel")), toOutputContext());
     });
