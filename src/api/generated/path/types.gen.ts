@@ -17,8 +17,8 @@ export type UpdateEventReq = {
 	name: string;
 	timeZone: string;
 	startAt: string;
-	endAt?: string;
-	location?: string;
+	endAt?: string | null;
+	location?: string | null;
 };
 
 export type EventRes = {
@@ -26,8 +26,8 @@ export type EventRes = {
 	name: string;
 	timeZone: string;
 	startAt: string;
-	endAt?: string;
-	location?: string;
+	endAt?: string | null;
+	location?: string | null;
 	peopleCount: number;
 	tags: Array<TagRes>;
 	createdAt: string;
@@ -41,20 +41,20 @@ export type CompanyRes = {
 	id: number;
 	domain: string;
 	displayName: string;
-	peopleCount?: number;
+	peopleCount?: number | null;
 };
 
 export type UpdateChannelReq = {
 	name: string;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 };
 
 export type ChannelRes = {
 	id: number;
 	name: string;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 	peopleCount: number;
 	tags: Array<TagRes>;
 	createdAt: string;
@@ -65,14 +65,14 @@ export type CreateTagReq = {
 };
 
 export type AttachTagReq = {
-	tagId?: number;
-	name?: string;
+	tagId?: number | null;
+	name?: string | null;
 };
 
 export type EmailDetailRes = {
 	email: string;
 	type: "WORK" | "PERSONAL" | "OTHER";
-	domain?: string;
+	domain?: string | null;
 };
 
 export type MergeOperationRes = {
@@ -85,14 +85,14 @@ export type MergeOperationRes = {
 export type PersonChannelDetailRes = {
 	id: number;
 	name: string;
-	icon?: string;
-	color?: string;
-	joinedAt?: string;
+	icon?: string | null;
+	color?: string | null;
+	joinedAt?: string | null;
 };
 
 export type PersonCompanyRes = {
-	id?: number;
-	domain?: string;
+	id?: number | null;
+	domain?: string | null;
 	displayName: string;
 	nameUpdatable: boolean;
 };
@@ -100,18 +100,18 @@ export type PersonCompanyRes = {
 export type PersonDetailRes = {
 	id: number;
 	name: string;
-	firstName?: string;
-	lastName?: string;
+	firstName?: string | null;
+	lastName?: string | null;
 	primaryEmail: EmailDetailRes;
 	emails: Array<EmailDetailRes>;
-	primaryPhone?: string;
+	primaryPhone?: string | null;
 	phones: Array<string>;
-	company?: PersonCompanyRes;
-	jobTitle?: string;
-	address?: string;
-	avatarUrl?: string;
-	linkedInUrl?: string;
-	xUrl?: string;
+	company?: PersonCompanyRes | null;
+	jobTitle?: string | null;
+	address?: string | null;
+	avatarUrl?: string | null;
+	linkedInUrl?: string | null;
+	xUrl?: string | null;
 	channels: Array<PersonChannelDetailRes>;
 	events: Array<PersonEventDetailRes>;
 	mergeOperations: Array<MergeOperationRes>;
@@ -122,8 +122,8 @@ export type PersonEventDetailRes = {
 	id: number;
 	name: string;
 	startAt: string;
-	location?: string;
-	joinedAt?: string;
+	location?: string | null;
+	joinedAt?: string | null;
 };
 
 export type IntegrationImportReq = {
@@ -199,7 +199,7 @@ export type ColumnMappingRes = {
 		| "LINKEDIN_URL"
 		| "X_URL"
 		| "JOINED_AT";
-	confidence?: number;
+	confidence?: number | null;
 	suggestions: Array<SuggestionRes>;
 };
 
@@ -223,58 +223,58 @@ export type CreateEventReq = {
 	name: string;
 	timeZone: string;
 	startAt: string;
-	endAt?: string;
-	location?: string;
+	endAt?: string | null;
+	location?: string | null;
 };
 
 export type CreatePersonReq = {
 	email: string;
-	firstName?: string;
-	lastName?: string;
+	firstName?: string | null;
+	lastName?: string | null;
 	phones: Array<string>;
-	jobTitle?: string;
-	address?: string;
-	avatarUrl?: string;
-	linkedInUrl?: string;
-	xUrl?: string;
-	companyName?: string;
-	joinedAt?: string;
+	jobTitle?: string | null;
+	address?: string | null;
+	avatarUrl?: string | null;
+	linkedInUrl?: string | null;
+	xUrl?: string | null;
+	companyName?: string | null;
+	joinedAt?: string | null;
 };
 
 export type CreateChannelReq = {
 	name: string;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 };
 
 export type UpdatePersonReq = {
-	firstName?: string;
-	lastName?: string;
-	primaryEmail?: string;
-	emails?: Array<string>;
-	primaryPhone?: string;
-	phones?: Array<string>;
-	jobTitle?: string;
-	address?: string;
-	avatarUrl?: string;
-	linkedInUrl?: string;
-	xUrl?: string;
-	companyName?: string;
-	companyId?: number;
-	removeCompany?: boolean;
+	firstName?: string | null;
+	lastName?: string | null;
+	primaryEmail?: string | null;
+	emails?: Array<string> | null;
+	primaryPhone?: string | null;
+	phones?: Array<string> | null;
+	jobTitle?: string | null;
+	address?: string | null;
+	avatarUrl?: string | null;
+	linkedInUrl?: string | null;
+	xUrl?: string | null;
+	companyName?: string | null;
+	companyId?: number | null;
+	removeCompany?: boolean | null;
 };
 
 export type PersonChannelRes = {
 	id: number;
 	name: string;
-	icon?: string;
-	joinedAt?: string;
+	icon?: string | null;
+	joinedAt?: string | null;
 };
 
 export type PersonEventRes = {
 	id: number;
 	name: string;
-	joinedAt?: string;
+	joinedAt?: string | null;
 };
 
 export type PersonPageRes = {
@@ -289,12 +289,12 @@ export type PersonRes = {
 	id: number;
 	name: string;
 	primaryEmail: string;
-	primaryPhone?: string;
-	company?: PersonCompanyRes;
-	jobTitle?: string;
+	primaryPhone?: string | null;
+	company?: PersonCompanyRes | null;
+	jobTitle?: string | null;
 	channels: Array<PersonChannelRes>;
 	events: Array<PersonEventRes>;
-	joinedAt?: string;
+	joinedAt?: string | null;
 	createdAt: string;
 };
 
@@ -308,14 +308,14 @@ export type ChangeLogSourceRes = {
 	id: number;
 	type: "CHANNEL" | "EVENT";
 	name: string;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 };
 
 export type FieldChangeRes = {
 	field: string;
-	before?: string;
-	after?: string;
+	before?: string | null;
+	after?: string | null;
 };
 
 export type MergedFromInfo = {
@@ -326,7 +326,7 @@ export type MergedFromInfo = {
 
 export type PersonActivityRes = {
 	content: Array<PersonChangeLogEntryRes>;
-	nextCursor?: number;
+	nextCursor?: number | null;
 	hasNext: boolean;
 };
 
@@ -342,22 +342,20 @@ export type PersonChangeLogEntryRes = {
 		| "SOURCE_CONNECTED"
 		| "SOURCE_DISCONNECTED";
 	actor: ChangeLogMemberRes;
-	changes?: Array<FieldChangeRes>;
-	source?: ChangeLogSourceRes;
-	mergedFrom?: MergedFromInfo;
+	changes?: Array<FieldChangeRes> | null;
+	source?: ChangeLogSourceRes | null;
+	mergedFrom?: MergedFromInfo | null;
 	createdAt: string;
 };
 
-export type StreamingResponseBody = {
-	[key: string]: unknown;
-};
+export type StreamingResponseBody = unknown;
 
 export type ChannelMetricRes = {
 	id: number;
 	name: string;
 	personCount: number;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 };
 
 export type CompanyMetricRes = {
@@ -377,8 +375,8 @@ export type GrowthRes = {
 	uniqueAudience: number;
 	latestTotal: number;
 	latestNetNewRate: number;
-	totalDelta?: TrendDelta;
-	netNewRateDelta?: TrendDelta;
+	totalDelta?: TrendDelta | null;
+	netNewRateDelta?: TrendDelta | null;
 };
 
 export type PathOverviewRes = {
@@ -393,8 +391,8 @@ export type PathOverviewRes = {
 };
 
 export type RetentionRes = {
-	returnRate?: number;
-	returnRateDelta?: TrendDelta;
+	returnRate?: number | null;
+	returnRateDelta?: TrendDelta | null;
 	avgEventsPerPerson: number;
 };
 
@@ -430,15 +428,15 @@ export type IntegrationImportJobRes = {
 	id: number;
 	status: "PENDING" | "RUNNING" | "PARTIAL_SUCCESS" | "COMPLETED" | "FAILED";
 	mode: "UPDATE" | "SKIP";
-	totalCount?: number;
+	totalCount?: number | null;
 	processedCount: number;
 	newCount: number;
 	updatedCount: number;
 	duplicatedCount: number;
 	skipCount: number;
 	failedCount: number;
-	startedAt?: string;
-	completedAt?: string;
+	startedAt?: string | null;
+	completedAt?: string | null;
 };
 
 export type ExternalEventRes = {
@@ -467,15 +465,15 @@ export type BulkImportJobRes = {
 	skipCount: number;
 	failedCount: number;
 	failedRows: Array<FailedRowRes>;
-	processStartedAt?: string;
-	completedAt?: string;
+	processStartedAt?: string | null;
+	completedAt?: string | null;
 };
 
 export type FailedRowRes = {
 	rowNum: number;
-	errorCode?: string;
-	errorMessage?: string;
-	rawValue?: string;
+	errorCode?: string | null;
+	errorMessage?: string | null;
+	rawValue?: string | null;
 };
 
 export type CompanyPageRes = {
@@ -506,11 +504,11 @@ export type TrendSummary = {
 	uniqueAudience: number;
 	latestTotal: number;
 	latestNetNewRate: number;
-	returnRate?: number;
-	latestName?: string;
-	totalDelta?: TrendDelta;
-	netNewRateDelta?: TrendDelta;
-	returnRateDelta?: TrendDelta;
+	returnRate?: number | null;
+	latestName?: string | null;
+	totalDelta?: TrendDelta | null;
+	netNewRateDelta?: TrendDelta | null;
+	returnRateDelta?: TrendDelta | null;
 };
 
 export type AcquisitionDropInsight = {
@@ -533,12 +531,12 @@ export type ConcentrationRiskInsight = {
 };
 
 export type EventInsightRes = {
-	limitedData?: LimitedDataInsight;
-	audienceMix?: AudienceMixInsight;
-	reachMomentum?: ReachMomentumInsight;
-	standout?: StandoutInsight;
-	acquisitionDrop?: AcquisitionDropInsight;
-	concentrationRisk?: ConcentrationRiskInsight;
+	limitedData?: LimitedDataInsight | null;
+	audienceMix?: AudienceMixInsight | null;
+	reachMomentum?: ReachMomentumInsight | null;
+	standout?: StandoutInsight | null;
+	acquisitionDrop?: AcquisitionDropInsight | null;
+	concentrationRisk?: ConcentrationRiskInsight | null;
 };
 
 export type LimitedDataInsight = {
@@ -549,7 +547,7 @@ export type ReachMomentumInsight = {
 	trend: "GROWING" | "DECLINING";
 	deltaPp: number;
 	eventCount: number;
-	slopePerEvent?: number;
+	slopePerEvent?: number | null;
 };
 
 export type StandoutInsight = {
@@ -569,13 +567,14 @@ export type ChannelEventContributionRes = {
 export type ContributionChannelInfo = {
 	id: number;
 	name: string;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 };
 
 export type ContributionMetrics = {
-	totalUniqueParticipants: number;
-	avgContributionRate: number;
+	channelSize: number;
+	membersEverRegistered: number;
+	eventParticipationRate: number;
 };
 
 export type EventContribution = {
@@ -583,10 +582,9 @@ export type EventContribution = {
 	name: string;
 	startAt: string;
 	total: number;
-	netNew: number;
-	returning: number;
-	netNewRate: number;
-	returningRate: number;
+	joinedSinceLastEvent: number;
+	alreadyInChannel: number;
+	acquisitionRate: number;
 };
 
 export type ChannelOverlapRes = {
@@ -603,8 +601,8 @@ export type Intersection = {
 export type OverlapChannelInfo = {
 	id: number;
 	name: string;
-	icon?: string;
-	color?: string;
+	icon?: string | null;
+	color?: string | null;
 	personCount: number;
 };
 

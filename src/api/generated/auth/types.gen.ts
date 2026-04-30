@@ -6,7 +6,7 @@ export type ClientOptions = {
 
 export type AuthOverviewRes = {
 	teamMemberCount: number;
-	memberFirstName?: string;
+	memberFirstName?: string | null;
 };
 
 export type OrganizationListRes = {
