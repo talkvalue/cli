@@ -42,5 +42,5 @@ description: "Recipe for analyzing TalkValue channel performance: discover chann
 
 ## Tips
 
-- Attribution shows how many people from a channel attended each specified event. Pass multiple `--event-id` flags to compare across events in one call.
+- Attribution shows how many people from a channel attended each specified event, splitting them into members who joined the channel since the previous event (`joinedSinceLastEvent`, with `acquisitionRate`) versus those already in the channel (`alreadyInChannel`). Channel-level metrics expose `channelSize`, `membersEverRegistered`, and `eventParticipationRate`. Pass multiple `--event-id` flags to compare across events in one call.
 - Audience overlap requires at least 2 channels and accepts up to 5. The result shows the count of contacts shared between each pair.
