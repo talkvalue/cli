@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/talkvalue/cli/compare/v1.5.0...v1.6.0) (2026-04-30)
+
+
+### Features
+
+* **api:** regenerate SDK for channel attribution cohort model ([35f4e55](https://github.com/talkvalue/cli/commit/35f4e5503575b0ead78e4c0d87f3d7dfc394be39))
+
 ## [1.5.0](https://github.com/talkvalue/cli/compare/v1.4.1...v1.5.0) (2026-04-22)
 
 
