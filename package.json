@@ -1,6 +1,6 @@
 {
   "name": "@talkvalue/cli",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "TalkValue CLI — manage your contacts and channels",
   "type": "module",
   "bin": {
